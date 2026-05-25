@@ -1,0 +1,18 @@
+//Extra File just for listing
+
+// [0]-[2] = Unused
+// [3] = HUD
+// [4] = Office
+// [5] = Cam Drawer
+// [6] = Camera
+// [7]-[8] = Unused
+// [9] = Pause Menu
+
+// [10] = Serpent
+// [11] = Soink
+// [12] = Shrine
+// [13] = Timely Fellow
+// [14] = dog
+// [15] = death screen
+
+// [99] = Title Card

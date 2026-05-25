@@ -1,0 +1,184 @@
+// ----------------------------------
+// RSDK Project: Five Nights At Team Forever
+// Script Description: Phone Guy
+// Script Author: Casteor573
+// ----------------------------------
+
+
+// Priority
+private alias Object.Value0 : Object.Timer     //	you know this one  
+
+private alias Object.Value1 : Object.phoneDial
+private alias Object.Value2 : Object.phoneTimer
+private alias Object.Value3 : Credits.Move
+
+event ObjectMain
+	switch object.state
+		case 0
+			Credits.Move = 0
+		break
+		case 1	
+			if Credits.Move < 1850
+				Credits.Move++
+			else
+				object.state++
+			end if
+
+			if inputpress.buttonB == 1
+				object.state++
+			end if
+		break
+		case 2
+			foreach (TypeName[Menu Control], arrayPos0, ALL_ENTITIES)
+				object[arrayPos0].state = 14
+			next	
+			object.state = 0
+		break
+	end switch
+end event
+
+
+event ObjectDraw
+	temp0 = 0
+	temp1 = 10
+	temp1 -= Credits.Move
+	while temp0 < 90
+		//DrawString(first sprite, x position, y position, space width, character spacing, line drop, menu slot, menu entry)
+		DrawString(1, 50, temp1, 4, 0, 1, 5, temp0)
+		temp0 ++
+		temp1 += 20
+	loop
+end event
+
+event ObjectStartup
+	LoadSpriteSheet("FNATF/Objects.gif")
+	SetupMenu(1, 0, 1, 2)
+	LoadTextFile(5, "Credits/Credits.txt")
+
+	// 0 mute
+	SpriteFrame(-32, -11, 64, 22, 720, 364)	
+
+	// STUPID FONT 
+	SpriteFrame(-7, -5, 5, 9, 1, 711)	// 1	- !
+	SpriteFrame(-7, -5, 5, 9, 7, 711)	// 2	- "
+	SpriteFrame(-7, -5, 7, 9, 7, 711)	// 3	- #
+	SpriteFrame(-7, -5, 6, 9, 21, 711)	// 4	- $
+	SpriteFrame(-7, -5, 7, 9, 28, 711)	// 5	- %
+	SpriteFrame(-7, -5, 7, 9, 36, 711)	// 6	- &
+	SpriteFrame(-7, -5, 4, 9, 44, 711)	// 7	- '
+	SpriteFrame(-7, -5, 4, 9, 49, 711)	// 8	- (
+	SpriteFrame(-7, -5, 4, 9, 54, 711)	// 9	- )
+	SpriteFrame(-7, -5, 7, 9, 55, 711)	// 10	- *
+	SpriteFrame(-7, -5, 7, 9, 67, 711)	// 11	- +
+	SpriteFrame(-7, -5, 4, 9, 75, 711)	// 12	- ,
+	SpriteFrame(-7, -5, 5, 9, 80, 711)	// 13	- -
+	SpriteFrame(-7, -5, 3, 9, 86, 711)	// 14	- .
+	SpriteFrame(-7, -5, 5, 9, 86, 711)	// 15	- /
+
+	//16 - 25		0 - 9
+	temp0 = 98
+	while temp0 < 168
+		SpriteFrame(-6, -4, 6, 8, temp0, 711)
+		temp0 += 7
+	loop	
+
+	SpriteFrame(-2, -4, 3, 8, 168, 711)	// 26	- :
+	SpriteFrame(-2, -5, 4, 9, 172, 711)	// 27	- ;
+	SpriteFrame(-3, -4, 5, 8, 177, 711)	// 28	- <
+	SpriteFrame(-3, -4, 6, 8, 183, 711)	// 29	- =			
+	SpriteFrame(-3, -4, 5, 8, 190, 711)	// 30	- >	
+	SpriteFrame(-3, -4, 6, 8, 196, 711)	// 31	- ?	
+	SpriteFrame(-5, -5, 10, 9, 196, 711)	// 32	- @
+
+	//33 - 40	A - H
+	temp0 = 1
+	while temp0 < 57
+		SpriteFrame(-7, -4, 6, 8, temp0, 722)
+		temp0 += 7
+	loop	
+
+	SpriteFrame(-7, -4, 5, 8, 57, 722)	// 41	- I
+	SpriteFrame(-7, -4, 4, 8, 63, 722)	// 42	- J
+	SpriteFrame(-7, -4, 6, 8, 68, 722)	// 43	- K
+	SpriteFrame(-7, -4, 6, 8, 75, 722)	// 44	- L
+	SpriteFrame(-7, -4, 7, 8, 82, 722)	// 45	- M
+	SpriteFrame(-7, -4, 6, 8, 90, 722)	// 46	- N
+	SpriteFrame(-7, -4, 7, 8, 97, 722)	// 47	- O
+	SpriteFrame(-7, -4, 6, 8, 105, 722)	// 48	- P
+	SpriteFrame(-7, -4, 7, 9, 112, 722)	// 49	- Q
+	SpriteFrame(-7, -4, 6, 8, 120, 722)	// 50	- R
+	SpriteFrame(-7, -4, 6, 8, 127, 722)	// 51	- S
+	SpriteFrame(-7, -4, 7, 8, 134, 722)	// 52	- T
+	SpriteFrame(-7, -4, 6, 8, 142, 722)	// 53	- U
+	SpriteFrame(-7, -4, 7, 8, 149, 722)	// 54	- V
+	SpriteFrame(-7, -4, 9, 8, 157, 722)	// 55	- W
+	SpriteFrame(-7, -4, 7, 8, 167, 722)	// 56	- X
+	SpriteFrame(-7, -4, 7, 8, 175, 722)	// 57	- Y
+	SpriteFrame(-7, -4, 6, 8, 183, 722)	// 58	- Z
+
+	SpriteFrame(-3, -5, 6, 9, 1, 733)	// 59	- [
+	SpriteFrame(-3, -5, 6, 9, 8, 733)	// 60	- \
+	SpriteFrame(-3, -5, 6, 9, 15, 733)	// 61	- ]
+	SpriteFrame(-4, -5, 7, 9, 22, 733)	// 62	- ^
+	SpriteFrame(-4, -5, 7, 9, 30, 733)	// 63	- _
+	SpriteFrame(-3, -5, 6, 9, 38, 733)	// 64	- `
+
+	SpriteFrame(-7, -4, 6, 8, 1, 743)	// 65	- a
+	SpriteFrame(-7, -4, 6, 8, 8, 743)	// 66	- b
+	SpriteFrame(-7, -4, 6, 8, 15, 743)	// 67	- c		67 67 67 67 67
+	SpriteFrame(-7, -4, 6, 8, 22, 743)	// 68	- d
+	SpriteFrame(-7, -4, 6, 8, 29, 743)	// 69	- e
+	SpriteFrame(-7, -4, 6, 8, 36, 743)	// 70	- f
+	SpriteFrame(-7, -4, 6, 9, 43, 743)	// 71	- g
+	SpriteFrame(-7, -4, 6, 8, 50, 743)	// 72	- h
+	SpriteFrame(-7, -4, 5, 8, 57, 743)	// 73	- i		
+	SpriteFrame(-7, -5, 6, 9, 63, 743)	// 74	- j
+	SpriteFrame(-7, -4, 6, 8, 70, 743)	// 75	- k
+	SpriteFrame(-7, -4, 5, 8, 77, 743)	// 76	- l
+	SpriteFrame(-7, -4, 9, 8, 83, 743)	// 77	- m		
+	SpriteFrame(-7, -4, 6, 8, 93, 743)	// 78	- n
+	SpriteFrame(-7, -4, 6, 8, 100, 743)	// 79	- o
+	SpriteFrame(-7, -4, 6, 9, 107, 743)	// 80	- p
+	SpriteFrame(-7, -5, 6, 9, 114, 743)	// 81	- q
+	SpriteFrame(-7, -4, 6, 8, 121, 743)	// 82	- r
+	SpriteFrame(-7, -4, 5, 8, 128, 743)	// 83	- s
+	SpriteFrame(-7, -4, 4, 8, 134, 743)	// 84	- t
+
+	SpriteFrame(-7, -4, 6, 8, 139, 743)	// 85	- u
+	SpriteFrame(-7, -4, 6, 8, 146, 743)	// 86	- v
+	SpriteFrame(-7, -4, 7, 8, 153, 743)	// 87	- w
+	SpriteFrame(-7, -4, 7, 8, 161, 743)	// 88	- x
+	SpriteFrame(-7, -5, 6, 9, 169, 743)	// 89	- y
+	SpriteFrame(-7, -4, 6, 8, 176, 743)	// 90	- z
+
+	SpriteFrame(-7, -5, 6, 9, 1, 753)	// 91	- {
+	SpriteFrame(-7, -5, 6, 9, 8, 753)	// 92	- |
+	SpriteFrame(-7, -5, 6, 9, 15, 753)	// 93	- }
+	SpriteFrame(-7, -5, 6, 9, 23, 753)	// 94	- ~
+
+	// Place the HUD object into reserved object slot 4 and initialise its values
+	Object[20].Type = TypeName[Credits]
+	
+	// The object should always be run, regardless if it's within camera bounds or not
+	Object[20].Priority = PRIORITY_ACTIVE
+	
+	// Make the HUD draw ontop of all other sprites, too
+	Object[20].DrawOrder = 4
+end event
+
+
+// ========================
+// Editor events
+// ========================
+
+event RSDKDraw
+	DrawSprite(0)
+end event
+
+
+event RSDKLoad
+	LoadSpriteSheet("3D_Test/Objects.gif")
+	SpriteFrame(0, 0, 24, 16, 206, 58)
+
+	SetVariableAlias(ALIAS_VAR_PROPVAL, "unused")
+end event

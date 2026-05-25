@@ -1,0 +1,81 @@
+//// ========================
+// RSDK Project: FNATF
+// Script Name: Dudes
+// Script Author: KarlEmerald
+// ========================
+
+// ========================
+// Aliases
+// ========================
+
+private alias object.value0 : object.alphaTarget
+
+private alias object.value14 : object.movementInput
+private alias object.value15 : object.movementInputTarget
+
+// ========================
+// Events
+// ========================
+
+event ObjectDraw
+    LoadSpriteSheet("FNATFMenu/Menu.gif")
+
+    object.movementInput = object.alpha
+    object.movementInputTarget = object.alphaTarget
+    CallFunction(MenuControl_MovementFunc)
+    object.alpha = object.movementInput
+
+    object.inkEffect = INK_ALPHA
+    DrawSpriteScreenFX(176, FX_INK, screen.xsize, screen.ysize)
+
+    LoadSpriteSheet("FNATFMenu/Text.gif")
+
+    if object.alpha > 0
+        temp0 = screen.ysize
+        temp0 -= 20
+        DrawMenu(10, 5, temp0)
+    end if   
+
+    LoadSpriteSheet("FNATFMenu/Menu.gif")
+end event
+
+event ObjectStartup
+    LoadSpriteSheet("FNATFMenu/Menu.gif")
+
+	//Load font sprites
+	temp0 = 0
+	temp1 = 0
+	while temp0 < 88
+		while temp1 < 128
+			SpriteFrame(0, 0, 8, 8, temp1, temp0)
+			temp1 += 8
+		loop
+		temp1 = 0
+		temp0 += 8
+	loop
+
+	SpriteFrame(-264, -271, 264, 271, 1, 182) 
+
+    foreach(TypeName[Dudes], arrayPos0, ALL_ENTITIES)
+        object[arrayPos0].drawOrder = 3
+        object[arrayPos0].alpha = 0
+    next
+
+    SetupMenu(10, 1, 1, 0)
+    AddMenuEntry(10, "1.0.1.20260402", false)
+end event
+
+
+// ========================
+// Editor Events
+// ========================
+
+event RSDKDraw
+    DrawSprite(0)
+end event
+
+
+event RSDKLoad
+    LoadSpriteSheet("Global/Display.gif")
+    SpriteFrame(-16, -16, 32, 32, 1, 143)		// #0 - "Script" Icon
+end event

@@ -1,0 +1,446 @@
+// ----------------------------------
+// RSDK Project: Team Forever
+// Script Description: Team Forever Splash Screen
+// Script Author: KarlEmerald
+// ----------------------------------
+
+//-------Aliases-------//
+public alias saveRAM[202] : saved.reduceMotion
+public alias saveRAM[204] : saved.officeMusic
+public alias saveRAM[205] : saved.lights
+public alias saveRAM[211] : saved.mouse
+public alias saveRAM[213] : game.firstBoot
+
+
+private alias object.value0 : object.timer
+private alias object.value1 : object.teamX
+private alias object.value2 : object.letterCount
+private alias object.value3 : object.letterX
+private alias object.value4 : object.xTarget
+
+private alias 0 : TEAMFOREVER_MAINOBJ
+private alias 1 : TEAMFOREVER_LETTER_F
+private alias 2 : TEAMFOREVER_LETTER_O
+private alias 3 : TEAMFOREVER_LETTER_R
+private alias 4 : TEAMFOREVER_LETTER_E
+private alias 5 : TEAMFOREVER_LETTER_V
+private alias 6 : TEAMFOREVER_SONICOBJ
+private alias 7 : TEAMFOREVER_STAR
+
+public alias 0x10000 : HITBOX_AUTO
+
+//-------Function declarations-------//
+
+//-------Static Values-------//
+public value TeamForever_SonicEntityPos = 0;
+public value TeamForever_MainEntityPos = 0;
+public value TeamForever_LettersHit = 0;
+public value TeamForever_GroupFade = 0;
+
+//-------Tables-------//
+private table TeamForever_LetterOrder
+	1, 26 // F
+	2, 33 // O
+	3, 29 // R
+	4, 33 // E
+	5, 31 // V
+	4, 33 // E	
+	3, 29 // R	
+end table
+
+//-------Functions-------//
+
+
+event ObjectMain
+	switch object.propertyValue
+	case TEAMFOREVER_MAINOBJ
+
+		temp0 = SkipTFScreen
+		if object.state > 0
+			temp0 |= inputPress.start
+		end if	
+		if temp0 == true
+			foreach(TypeName[Team Forever], arrayPos0, ALL_ENTITIES)
+				object[arrayPos0].state = 10
+			next	
+			SkipTFScreen = false		
+		end if
+
+		TeamForever_MainEntityPos = object.entityPos
+
+		switch object.state
+		case 0
+			if object.timer == 0
+				TeamForever_GroupFade = 256
+				stage[0].activeLayer = 1
+				object.drawOrder = 4
+				LoadPalette("MenuPal.act", 0, 0, 0, 255)
+				object.priority = PRIORITY_ACTIVE		
+				PlayMusic(1)
+				object.teamX = -100
+				TeamForever_LettersHit = 0
+				
+				//couldnt fix some things so just set these by default upon first boot
+				if game.firstBoot == false
+					game.firstBoot = true
+					saved.officeMusic = true
+					saved.lights = false
+					saved.mouse = true
+					saveRAM[6000] = 0
+					Engine.BGMVolume = 100
+					Engine.SFXVolume = 100
+					saved.reduceMotion = 0
+					WriteSaveRAM()
+				end if
+			
+				object.letterX = screen.xcenter
+				object.letterX -= 140
+				temp2 = 0
+				while temp2 < 7
+					temp0 = temp2
+					temp0 *= 2
+					GetTableValue(temp1, temp0, TeamForever_LetterOrder)
+					CreateTempObject(TypeName[Team Forever], temp1, 0, 0)
+					object[tempObjectPos].ixpos = object.letterX
+					object[tempObjectPos].iypos = screen.ycenter
+					object[tempObjectPos].iypos += 10
+					object[tempObjectPos].drawOrder = 5
+
+					temp0++
+					GetTableValue(temp1, temp0, TeamForever_LetterOrder)
+					object.letterX += temp1
+					object.letterX += 2		
+					temp2++			
+				loop
+			end if	
+			object.timer++
+
+			if object.timer == 5
+				object.timer = 0
+				object.state++
+			else
+				if object.timer == 2
+					CreateTempObject(TypeName[Team Forever], TEAMFOREVER_SONICOBJ, 0, 0)
+					object[tempObjectPos].ixpos = -10
+					object[tempObjectPos].iypos = screen.ycenter
+					object[tempObjectPos].iypos += 2
+					object[tempObjectPos].drawOrder = 6
+					object[tempObjectPos].xTarget = object.letterX
+					object[tempObjectPos].xTarget += 30
+				end if
+			end if	
+			break
+		case 1	
+			if music.position >= 95741
+				object.letterX = screen.xcenter
+				object.letterX -= 94
+
+				CreateTempObject(TypeName[Team Forever], TEAMFOREVER_STAR, 0, 0)
+				object[tempObjectPos].ixpos = object.letterX
+				object[tempObjectPos].iypos = screen.ycenter
+				object[tempObjectPos].iypos += 2
+				object[tempObjectPos].drawOrder = 4
+				object[tempObjectPos].scale = 0x100
+
+				object.state++
+			end if
+			break
+		case 2	
+			if music.position >= 249000
+				object.timer++
+				if object.timer == 100
+					ResetObjectEntity(1, TypeName[Sega], 1, 0, 0)
+					object.state++
+				end if	
+			end if
+			break
+		case 3
+		case 10	
+			Static_Alpha = 256
+			Static_EnableSound = true
+			TeamForever_GroupFade = 0
+			
+			foreach(TypeName[Team Forever], arrayPos0, ALL_ENTITIES)
+				object[arrayPos0].type = TypeName[Blank Object]
+			next				
+
+			StopMusic()
+
+			ResetObjectEntity(object.entityPos, TypeName[Menu Control], 0, 0, 0)
+			break
+		end switch
+		break
+	case TEAMFOREVER_SONICOBJ
+		switch object.state
+		case 0
+			object.ixpos += 5
+			object.animation = ANI_RUNNING
+			TeamForever_SonicEntityPos = object.entityPos
+			if TeamForever_LettersHit == 7
+				object.animation = ANI_SKIDDING
+				object.state++
+			end if
+			break
+		case 1	
+			//SLIDING STUFF
+			temp0 = object.xTarget
+			temp0 -= object.ixpos
+			Abs(temp0)
+
+			temp1 = object.xTarget
+			temp1 -= object.ixpos
+
+			//Make sure it's exactly in the spot
+			if temp0 < 8
+				if object.ixpos > object.xTarget
+					object.ixpos--
+				else
+					if object.ixpos < object.xTarget
+						object.ixpos++
+					else
+						object.ixpos = object.xTarget
+						object.animation = ANI_STOPPED
+						object.direction = FLIP_X
+						object.state++
+					end if
+				end if
+			else
+				if object.ixpos > object.xTarget
+					object.ixpos -= 3
+				else
+					if object.ixpos < object.xTarget
+						object.ixpos += 3
+					end if
+				end if
+			end if				
+			break
+		case 2	
+			if music.position >= 194930
+				object.animation = ANI_FLYING
+				object.direction = FLIP_NONE
+				object.state++
+			end if
+			break
+		end switch
+		break
+	case TEAMFOREVER_LETTER_F
+	case TEAMFOREVER_LETTER_O
+	case TEAMFOREVER_LETTER_R
+	case TEAMFOREVER_LETTER_E
+	case TEAMFOREVER_LETTER_V
+		switch object.state
+		case 0
+			BoxCollisionTest(C_TOUCH, object.entityPos, 4, -8, 8, 8, TeamForever_SonicEntityPos, HITBOX_AUTO, HITBOX_AUTO, HITBOX_AUTO, HITBOX_AUTO)
+			if checkResult == true
+				object.visible = true
+				TeamForever_LettersHit++
+				object.state++
+			else
+				object.visible = false				
+			end if
+			break
+		case 1
+			object.iypos -= 5
+			temp0 = screen.ycenter
+			temp0 -= 20
+			if object.iypos <= temp0
+				object.state++
+			end if
+			break
+		case 2
+			//SLIDING STUFF
+			temp2 = screen.ycenter
+			temp2 += 5
+
+			temp0 = temp2
+			temp0 -= object.iypos
+			Abs(temp0)
+
+			temp1 = temp2
+			temp1 -= object.iypos
+
+			//Make sure it's exactly in the spot
+			if temp0 < 6
+				if object.iypos > temp2
+					object.iypos--
+				else
+					if object.iypos < temp2
+						object.iypos++
+					else
+						object.iypos = temp2
+						object.state++
+					end if
+				end if
+			else
+				if object.iypos > temp2
+					object.iypos -= 5
+				else
+					if object.iypos < temp2
+						object.iypos += 5
+					end if
+				end if
+			end if	
+			break
+		end switch		
+		break		
+	case TEAMFOREVER_STAR
+		if music.position >= 108056
+			//SLIDING STUFF
+			temp2 = 0x200
+
+			temp0 = temp2
+			temp0 -= object.scale
+			Abs(temp0)
+
+			temp1 = temp2
+			temp1 -= object.scale
+
+			//Make sure it's exactly in the spot
+			if temp0 < 6
+				if object.scale > temp2
+					object.scale--
+				else
+					if object.scale < temp2
+						object.scale++
+					else
+						object.scale = temp2
+						object.state++
+					end if
+				end if
+			else
+				object[arrayPos0].state = 10
+				if object.scale > temp2
+					object.scale -= 11
+				else
+					if object.scale < temp2
+						object.scale += 11
+					end if
+				end if
+			end if
+			object.rotation = 0
+		else
+			object.scale += 0x50
+			object.rotation += 12
+		end if
+		break	
+	end switch
+end event
+
+event ObjectDraw
+	switch object.propertyValue
+	case TEAMFOREVER_MAINOBJ
+		DrawRect(0, 0, screen.xsize, screen.ysize, 0, 0, 0, TeamForever_GroupFade)
+
+		if music.position >= 50000
+			temp2 = screen.xcenter
+			temp2 -= 140
+
+			//SLIDING STUFF
+			temp0 = temp2
+			temp0 -= object.teamX
+			Abs(temp0)
+
+			temp1 = temp2
+			temp1 -= object.teamX
+
+			if object.state != 2
+				//Make sure it's exactly in the spot
+				if temp0 < 6
+					if object.teamX > temp2
+						object.teamX--
+					else
+						if object.teamX < temp2
+							object.teamX++
+						else
+							object.teamX = temp2
+						end if
+					end if
+				else
+					temp1 >>= 2
+					object.teamX += temp1
+				end if	
+			end if	
+		end if	
+		object.inkEffect = INK_ALPHA
+
+		if music.position >= 194930
+			temp0 = screen.ysize
+			temp0 -= 30
+			
+			if object.state == 3
+				object.alpha = TeamForever_GroupFade
+			else
+				if object.state != 10
+					if object.alpha < 255
+						object.alpha += 16
+					else
+						object.alpha = 255
+					end if
+				end if
+			end if	
+
+			DrawSpriteScreenFX(6, FX_INK, screen.xcenter, temp0)
+		end if	
+		break
+	case TEAMFOREVER_SONICOBJ
+		if object.state != 10
+			ProcessAnimation()
+		end if	
+		object.inkEffect = INK_ALPHA
+		object.alpha = TeamForever_GroupFade
+		DrawObjectAnimation()
+
+		arrayPos0 = TeamForever_MainEntityPos
+
+		temp0 = screen.ycenter
+		temp0 -= 30
+		if object[arrayPos0].state != 3
+			DrawSpriteScreenXY(0, object[arrayPos0].teamX, temp0)
+		else
+			object.alpha = TeamForever_GroupFade
+			DrawSpriteScreenFX(0, FX_INK, object[arrayPos0].teamX, temp0)
+		end if	
+		break	
+	case TEAMFOREVER_LETTER_F
+	case TEAMFOREVER_LETTER_O
+	case TEAMFOREVER_LETTER_R
+	case TEAMFOREVER_LETTER_E
+	case TEAMFOREVER_LETTER_V
+		if object.visible == true
+			object.inkEffect = INK_ALPHA
+			object.alpha = TeamForever_GroupFade
+			DrawSpriteScreenFX(object.propertyValue, FX_INK, object.ixpos, object.iypos)
+		end if
+		break
+	case TEAMFOREVER_STAR
+		object.inkEffect = INK_ALPHA
+		object.alpha = TeamForever_GroupFade
+		DrawSpriteScreenFX(7, FX_ALL, object.ixpos, object.iypos)
+		break
+	end switch	
+end event
+
+
+event ObjectStartup
+	LoadSpriteSheet("FNATFMenu/TeamForever.gif")
+	LoadAnimation("Sonic.ani")
+	SetMusicTrack("TeamForever.ogg", 1, 0)
+	
+	SpriteFrame(0, 0, 60, 14, 1, 1) 		// 0 - Team
+	SpriteFrame(0, -17, 26, 33, 1, 16) 		// 1 - F
+	SpriteFrame(0, -17, 33, 34, 28, 16) 		// 2 - O
+	SpriteFrame(0, -17, 29, 33, 62, 16) 		// 3 - R
+	SpriteFrame(0, -17, 33, 34, 92, 16) 		// 4 - E
+	SpriteFrame(0, -17, 31, 33, 126, 16)  	// 5 - V
+	SpriteFrame(-58, -3, 116, 7, 1, 51)  	// 6 - copyright
+	SpriteFrame(-36, -36, 72, 73, 158, 1) 	// 7 - star
+end event
+
+event RSDKDraw
+	DrawSprite(0)
+end event
+
+event RSDKLoad
+	LoadSpriteSheet("Global/Display.gif")
+	SpriteFrame(-16, -16, 32, 32, 223, 172)
+end event

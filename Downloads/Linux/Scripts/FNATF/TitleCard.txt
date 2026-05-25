@@ -1,0 +1,145 @@
+// ----------------------------------
+// RSDK Project: Five Nights At Team Forever
+// Script Description: Cam Drawer
+// Script Author: Casteor573
+// ----------------------------------
+
+
+// Priority
+private alias Object.Value0 : Object.Timer     //	you know this one  
+public alias saveRAM[204] : saved.officeMusic
+
+event ObjectMain
+	switch object.state
+		case 0
+			StopMusic()
+			object.alpha = 256
+			object.timer++
+			if object.timer > 32
+				object.state++
+				PlaySfx(SfxName[Night Start], 0)
+				object.timer = 0
+			end if
+		break
+		case 1
+			if object.alpha > 0
+				object.alpha -= 8
+			end if
+
+			if object.alpha <= 0
+				object.timer++
+				if object.timer > 200
+					object.state++
+					object.timer = 0
+				end if
+			end if
+		break
+		case 2
+			object.alpha += 8
+			if object.alpha > 255
+
+				object.timer++
+				if object.timer > 100
+					if saved.officeMusic == 1
+						SetMusicTrack("Office.ogg", 0, 1)
+						PlayMusic(0)
+					end if
+					object.type = TypeName[Blank Object]
+					object.timer = 0
+				end if
+				
+			end if
+		break
+	end switch
+
+	if object.state < 2
+		if inputpress[1].start == true
+			object.timer = 100
+			object.state = 2
+		end if
+	end if
+
+end event
+
+event ObjectDraw
+	DrawRect(0, 0, screen.xsize, screen.ysize, 0, 0, 0, 255)
+
+	object.inkeffect = INK_ALPHA
+	temp0 = screen.xcenter
+	temp0 -= 24
+	DrawSpriteScreenXY(10, temp0, screen.ycenter)
+	temp0 += 96
+	DrawNumbers(0, temp0, screen.ycenter, stage.actnum, 2, 29, 0)
+	DrawRect(0, 0, screen.xsize, screen.ysize, 0, 0, 0, object.alpha)	
+
+end event
+
+event ObjectStartup
+	switch stage.actnum
+		case 1
+			SetPresenceDetails("Night 1")
+			break
+		case 2
+			SetPresenceDetails("Night 2")
+			break
+		case 3
+			SetPresenceDetails("Night 3")
+			break
+		case 4
+			SetPresenceDetails("Night 4")
+			break
+		case 5
+			SetPresenceDetails("Night 5")
+			break
+		case 6
+			SetPresenceDetails("Night 6")
+			break
+		case 7
+			SetPresenceDetails("Custom Night")
+			break
+	end switch
+	SetPresenceLargeImage("office", false)
+	SetPresenceSmallImage("tim", false)
+	SetPresenceState("Playing as Tim")
+	SetPresenceSmallText("Tim")
+	UpdatePresence()
+
+	LoadSpriteSheet("FNATF/Objects.gif")
+
+	//0 - 9
+	//big numbers
+	temp0 = 594
+	while temp0 < 884
+		SpriteFrame(-14, -14, 28, 28, temp0, 511)
+		temp0 += 29
+	loop
+
+	// 10 NIGHT
+	SpriteFrame(-69, -14, 137, 28, 456, 511)
+	
+	// Place the HUD object into reserved object slot 4 and initialise its values
+	Object[99].Type = TypeName[Title Card]
+	
+	// The object should always be run, regardless if it's within camera bounds or not
+	Object[99].Priority = PRIORITY_ACTIVE
+	
+	// Make the HUD draw ontop of all other sprites, too
+	Object[99].DrawOrder = 5
+end event
+
+
+// ========================
+// Editor events
+// ========================
+
+event RSDKDraw
+	DrawSprite(0)
+end event
+
+
+event RSDKLoad
+	LoadSpriteSheet("3D_Test/Objects.gif")
+	SpriteFrame(0, 0, 24, 16, 206, 58)
+
+	SetVariableAlias(ALIAS_VAR_PROPVAL, "unused")
+end event

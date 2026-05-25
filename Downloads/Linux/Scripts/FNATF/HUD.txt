@@ -1,0 +1,539 @@
+// ----------------------------------
+// RSDK Project: Five Nights At Team Forever
+// Script Description: HUD
+// Script Author: Casteor573
+// ----------------------------------
+
+private alias Object.Value0 : Object.Timer     //	you know this one  
+
+private alias Object.Value1 : Object.PowerTimer     // Initially set via a loop in the UFO script
+private alias Object.Value2 : Object.TimeSeconds   // Displayed time
+private alias Object.Value3 : Object.TimeFrames    // Hidden and used for time processing, this value is managed by Special Setup instead of here
+
+private alias Object.Value4 : Object.UsageBar
+
+private alias Object.Value5 : Object.EndFade
+private alias Object.Value6 : Object.EndYpos
+private alias Object.Value7 : Object.EndTimer
+private alias Object.Value8 : Object.MaxModeBeaten
+
+private alias Object.Value9 : Object.ShowTips
+
+private alias Object[4].Value10 : Object.TouchTimer
+
+private alias Object[4].Value16 : Object.PowerDrainRate
+private alias Object[4].Value2 : Object.ScrollPos
+
+private alias Object[10].State  : Serpent.State
+
+private alias Object[10].Value4 : Object.SerpentAI  
+private alias Object[11].Value4 : Object.SoinkAI  
+private alias Object[12].Value4 : Object.ShrineAI  
+private alias Object[13].Value4 : Object.TimelyFellowAI  
+
+private alias Object[6].Value1 : Object.CameraState
+
+private alias Object[20].Value2 : Object.phoneTimer
+
+public value EndingPayCheck = 0;
+
+private alias 2 : PRIORITY_ALWAYS         // Object will always update
+
+//States
+private alias 0 : HUD_MAINGAME_0         
+private alias 1 : HUD_WIN_FADEIN_1        
+private alias 2 : HUD_WIN_WAIT_2
+private alias 3 : HUD_WIN_FADEOUT_3
+private alias 4 : HUD_END_FADEIN_4
+private alias 5 : HUD_END_FADEOUT_5
+private alias 6 : HUD_END_LOAD_6
+
+reserve function TimelyHUD
+
+function TimelyHUD
+	//temp1 X pos
+	//temp2 Y pos
+
+
+	// NIGHT
+	temp1 = Screen.xsize
+	temp1 -= 60
+	
+	DrawSpriteScreenXY(12, temp1, 32)	//NIGHT
+	temp1 += 44
+	DrawNumbers(0, temp1, 32, stage.actnum, 3, 8, 0)	//number
+
+
+	// AM
+	temp1 = Screen.xsize
+	temp1 -= 38
+	DrawSpriteScreenXY(13, temp1, 16)	
+	temp1 -= 16
+
+	if stage.minutes == 0
+		DrawNumbers(0, temp1, 16, 12, 3, 11, 0)	//12
+	else
+		DrawNumbers(0, temp1, 16, stage.minutes, 3, 11, 0)	//number
+	end if
+
+	// power
+	temp1 = 44
+	temp2 = 28
+	DrawSpriteScreenXY(14, temp1, temp2)
+	// the number
+	temp1 += 64
+	temp2 -= 12
+	DrawNumbers(15, temp1, temp2, OfficePower, 3, 11, 0)	//
+	//percent	
+	temp1 += 20
+	DrawSpriteScreenXY(25, temp1, temp2)
+
+	temp1 -= 32
+	//usage bar
+	temp2 += 17
+	DrawSpriteScreenXY(26, temp1, temp2)
+
+	switch Object.UsageBar
+		case 0
+			EditFrame(26, -20, -6, 7, 12, 710, 201)
+		break
+		case 1
+			EditFrame(26, -20, -6, 15, 12, 710, 201)
+		break
+		case 2
+			EditFrame(26, -20, -6, 23, 12, 710, 201)
+		break
+		case 3
+			EditFrame(26, -20, -6, 31, 12, 710, 201)
+		break		
+		//shouldnt be possible to get 5 bars normally
+		case 4
+			EditFrame(26, -20, -6, 39, 12, 710, 201)
+		break				
+	end switch
+	
+	//pause icon
+	temp1 = Screen.xsize
+	temp1 -= 110
+	DrawSpriteScreenXY(43, temp1, 20)	
+
+	temp1 -= 50
+	DrawSpriteScreenXY(45, temp1, 20)		
+end function
+
+event ObjectMain
+	switch object.state
+		//main gameplay
+		case HUD_MAINGAME_0
+			if Object[SLOT_TITLECARD].Type == TypeName[Blank Object]
+				Object.TimeFrames++
+
+				if saved.sonic == 1
+					temp0 = 40
+				else
+					temp0 = 60
+				end if
+
+				if Object.TimeFrames >= temp0
+					stage.seconds++
+					if stage.seconds >= temp0
+						stage.seconds = 0
+						stage.minutes++
+					end if
+					Object.TimeFrames = 0
+				end if	
+
+
+				//shars the same value in Office.txt, cuz it works
+				if Object.TouchTimer == 0
+					temp0 = 0
+					temp0 += screen.xsize
+					temp0 -= 180
+					temp1 = 0
+					temp1 += screen.xsize
+					temp1 -= 135
+					CheckTouchRect(temp0, 0, temp1, 36)
+					if CheckResult > -1
+						Object.TouchTimer = 1
+						inputpress[1].buttonX = 1
+					end if
+				end if
+
+				if inputpress[1].buttonX == true
+					Object.ShowTips ^= 1
+				end if
+
+				if OfficePower > 0
+					if touchscreen[0].ypos <= 212
+						if object.alpha > 128
+							object.alpha -= 16
+						else
+							object.alpha = 128
+						end if
+					else
+						if object.alpha < 255
+							object.alpha += 16
+						else
+							object.alpha = 255
+						end if
+					end if
+				end if
+			end if
+			if stage.minutes == 6
+				//no more animatronics
+				// Object[10].Type = TypeName[Blank Object]	
+				// Object[11].Type = TypeName[Blank Object]
+				// Object[12].Type = TypeName[Blank Object]
+				// Object[13].Type = TypeName[Blank Object]
+				Object[3].Priority = PRIORITY_ALWAYS
+				
+				StopMusic()
+				StopSfx(SfxName[Hum])
+				StopSfx(SfxName[Fan])
+				StopSfx(SfxName[Shrine Kitchen])
+				
+				NightWon = 1
+				
+				stage.state = STAGE_FROZEN
+
+				CheckEqual(Object.SerpentAI, 20)
+				temp0 = checkresult
+				CheckEqual(Object.SoinkAI, 20)
+				temp0 &= checkresult
+				CheckEqual(Object.ShrineAI, 20)
+				temp0 &= checkresult
+				CheckEqual(Object.TimelyFellowAI, 20)
+				temp0 &= checkresult								
+				if temp0 == true
+					PlayMusic(4)
+					Object.MaxModeBeaten = 1
+				else
+					PlayMusic(1)
+				end if
+				
+				Object.EndYpos = screen.ycenter
+				Object.EndYpos += 16
+				object.alpha = 0
+				object.state = 1
+				object.timer = 0
+			end if
+
+			// if inputpress[1].buttonY == true
+			// 	stage.minutes = 6
+			// end if
+
+		break
+		//victory screen
+		case HUD_WIN_FADEIN_1
+			Object.EndFade += 16
+			
+			if object.EndFade > 128
+				object.alpha += 4
+			end if
+
+			if object.alpha > 255
+				if Object.EndYpos > 104
+					object.EndTimer++
+					if object.EndTimer > 75
+						Object.EndYpos--
+						object.EndTimer = 70
+					end if
+				else
+					PlaySfx(SfxName[Golf Clap], 0)
+					object.state++
+					object.timer = 0
+				end if
+			end if
+		break
+		//wait a bit
+		case HUD_WIN_WAIT_2
+			object.timer++
+
+			if object.timer > 256
+				if stage.actnum >= 5
+					object.state = 4
+				else
+					object.state++
+				end if
+				object.timer = 0
+				//loadstage
+			end if
+		break
+		// fade out and load stuff
+		case HUD_WIN_FADEOUT_3
+			object.timer += 16
+
+			if object.timer > 384
+				if stage.actnum < 5
+					stage.listPos++
+					saveRAM[6000]++
+					WriteSaveRAM()
+				end if	
+				LoadStage()	
+			end if
+			SetClassicFadeOut(0, 0, 0, object.timer) 
+		break		
+		//night 5 stuff
+		// fade out
+		case HUD_END_FADEIN_4
+			object.timer += 16
+			if object.timer > 384
+				object.state++
+				PlayMusic(5)
+			end if
+			SetClassicFadeOut(0, 0, 0, object.timer) 
+		break
+		// ok
+		case HUD_END_FADEOUT_5
+			if object.timer > 0
+				object.timer -= 16
+			end if
+
+			CheckTouchRect(0, 0, screen.xsize, screen.ysize)
+			if checkresult > -1
+				inputpress[1].start = true
+			end if
+
+			if inputpress[1].start == true
+				object.state++
+			end if
+
+			SetClassicFadeIn(0, 0, 0, object.timer) 
+		break
+		// ok bye
+		case HUD_END_LOAD_6
+			object.timer += 16
+			music.volume -= 8
+
+			//beat night 5
+			saveRAM[6001] = 1
+			//beat night 6
+			if stage.actnum == 6	
+				saveRAM[6002] = 1
+			end if
+			//grand prize
+
+			if stage.actnum == 7
+				if Object.MaxModeBeaten == 1
+					saveRAM[6003] = 1
+				end if
+			end if
+
+			WriteSaveRAM()
+			if object.timer > 384
+				stage.activeList = PRESENTATION_STAGE
+				stage.listPos = 0
+				LoadStage()	
+			end if
+
+			SetClassicFadeOut(0, 0, 0, object.timer) 
+		break
+	end switch
+end event
+
+event ObjectDraw
+	//youre gonna
+	if OfficePower <= 0
+		//YOURE GONNA DIE
+		DrawRect(0, 0, screen.xsize, screen.ysize, 0, 0, 0, 224)// 1	
+		if serpent.state == 19
+			temp0 = Object.ScrollPos
+			temp0 += 68
+			if object.alpha < 255
+				object.alpha += 16
+			end if
+			object.inkeffect = INK_ALPHA
+			DrawSpriteScreenFX(29, FX_INK, temp0, 50)	//door	
+		end if
+
+		if serpent.state >= 20
+			DrawRect(0, 0, screen.xsize, screen.ysize, 0, 0, 0, 255)// 1	
+		end if
+
+	else
+		//camera bar
+		object.inkeffect = INK_ALPHA
+
+		DrawSpriteScreenFX(10, FX_INK, screen.xcenter, 212)
+		CallFunction(TimelyHUD)
+	end if
+
+	if Object.ShowTips == 0
+		DrawSpriteScreenXY(44, 60, 96)
+	end if
+	
+
+	
+	//DrawNumbers(0, 32, 64, Shrine.State, 2, 11, 0)
+
+	//mouse
+	DrawSpriteScreenXY(11, touchscreen[0].xpos, touchscreen[0].ypos)
+
+	switch object.state
+		case HUD_WIN_FADEIN_1
+		case HUD_WIN_WAIT_2
+		case HUD_WIN_FADEOUT_3
+		case HUD_END_FADEIN_4
+			DrawRect(0, 103, screen.xsize, 33, 0, 0, 0, Object.EndFade)
+
+			object.inkeffect = INK_ALPHA	
+
+			// 5 and 6
+			temp0 = screen.xcenter
+			temp0 -= 40
+			DrawSpriteScreenFX(28, FX_INK, temp0, Object.EndYpos)	
+
+			// :AM
+			DrawSpriteScreenFX(27, FX_INK, screen.xcenter, screen.ycenter)		
+
+			DrawRect(0, 0, screen.xsize, 103, 0, 0, 0, Object.EndFade)	
+			//bottom
+			DrawRect(0, 136, screen.xsize, screen.ysize, 0, 0, 0, Object.EndFade)	
+		break
+		case HUD_END_FADEOUT_5
+		case HUD_END_LOAD_6
+			DrawRect(0, 0, screen.xsize, screen.ysize, 0, 0, color1, 255)
+
+			temp0 = 0
+			while temp0 < screen.ysize
+				temp1 = 0
+				while temp1 < screen.xsize
+					DrawSpriteScreenXY(30, temp1, temp0)
+					temp1 += 64
+				loop
+				temp0 += 64
+			loop
+
+			EndingPayCheck = 914
+
+			// x
+			temp0 = screen.xcenter
+			// y
+			temp1 = screen.ycenter
+			temp1 += 24
+			DrawSpriteScreenXY(41, temp0, temp1)
+
+			// number
+			temp1 -= 16
+			temp0 += 108
+			DrawNumbers(31, temp0, temp1, EndingPayCheck, 3, 5, 0)	//number
+			//decimal
+			temp0 += 14
+			DrawNumbers(31, temp0, temp1, 69, 3, 5, 0)	//number
+
+			//good job
+			DrawSpriteScreenXY(42, screen.xcenter, 32)
+
+		break
+	end switch
+	
+	// DrawNumbers(0, 70, 32, object[20].value4, 10, 11, 0)	//number
+	// DrawNumbers(0, 64, 64, Object.phoneTimer, 5, 11, 0)	//number
+end event
+
+event ObjectStartup
+	
+	LoadSpriteSheet("FNATF/Objects.gif")
+
+	SetMusicTrack("TimelyVictory.ogg", 1, 0)
+	SetMusicTrack("TimelyDeath.ogg", 2, 0)
+	SetMusicTrack("TimelyInTheDark.ogg", 3, 1)
+	SetMusicTrack("MaxModeWin.ogg", 4, 0)	
+	SetMusicTrack("TimelyEnding.ogg", 5, 19284)	
+	SetMusicTrack("dogsong.ogg", 6, 1)		
+	// Place the HUD object into reserved object slot 4 and initialise its values
+	Object[3].Type = TypeName[HUD]
+	
+	// The object should always be run, regardless if it's within camera bounds or not
+	Object[3].Priority = PRIORITY_ACTIVE
+	
+	// Make the HUD draw ontop of all other sprites, too
+	Object[3].DrawOrder = 5
+
+	//0 - 9
+	//numbers that are yellow
+	temp0 = 360
+	while temp0 < 480
+		SpriteFrame(-6, -6, 11, 12, temp0, 1)
+		temp0 += 12
+	loop
+
+	// 10 - Bar
+	SpriteFrame(-150, 0, 300, 23, 59, 1)	
+
+	//11 mouse
+	SpriteFrame(0, 0, 12, 21, 46, 1)
+
+	//12 NIGHT
+	SpriteFrame(-27, -6, 53, 12, 682, 174)	
+	//13 AM
+	SpriteFrame(-27, -6, 53, 12, 682, 187)	
+
+	//14	power and usage
+	SpriteFrame(-32, -18, 64, 34, 682, 214)
+
+	//15 - 24
+	//numbers that are white
+	temp0 = 360
+	while temp0 < 480
+		SpriteFrame(-6, -6, 11, 12, temp0, 14)
+		temp0 += 12
+	loop	
+
+	//25	%
+	SpriteFrame(-14, -6, 13, 12, 747, 214)
+
+	//26 power bar
+	SpriteFrame(-20, -6, 39, 12, 710, 201)
+
+	//27 : AM
+	SpriteFrame(-55, -14, 109, 28, 913, 164)
+	//28 5 6
+	SpriteFrame(-14, -30, 28, 60, 913, 193)
+
+	// 29
+	SpriteFrame(-25, -54, 49, 107, 557, 401)	//20		
+
+	//30
+	SpriteFrame(0, 0, 64, 64, 719, 299)	//checker bg	
+
+	//31 - 40	small grey numbers
+	temp0 = 784
+	while temp0 < 834
+		SpriteFrame(-2, -3, 4, 6, temp0, 504)
+		temp0 += 5
+	loop
+
+	//41
+	SpriteFrame(-144, -72, 288, 144, 1, 566)	//paycheck
+
+	//42
+	SpriteFrame(-128, -15, 256, 30, 290, 544)	//Good Job!	
+
+	//43 pause icon
+	SpriteFrame(-8, -8, 16, 16, 736, 174)	
+
+	//44 show tips
+	SpriteFrame(-48, -24, 96, 48, 719, 250)	
+
+	//45	tips button
+	SpriteFrame(-8, -8, 16, 16, 753, 174)	
+
+end event
+
+
+// ========================
+// Editor events
+// ========================
+
+event RSDKDraw
+	DrawSprite(0)
+end event
+
+
+event RSDKLoad
+	LoadSpriteSheet("3D_Test/Objects.gif")
+	SpriteFrame(0, 0, 24, 16, 206, 58)
+
+	SetVariableAlias(ALIAS_VAR_PROPVAL, "unused")
+end event

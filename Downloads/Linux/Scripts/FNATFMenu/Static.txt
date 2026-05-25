@@ -1,0 +1,166 @@
+//// ========================
+// RSDK Project: FNATF
+// Script Name: Static
+// Script Author: KarlEmerald
+// ========================
+
+// ========================
+// Aliases
+// ========================
+
+private alias object.value0 : object.waterfallLoopTimer
+private alias object.value1 : object.playingWaterfallLoop
+private alias object.value2 : object.timer
+
+public alias saveRAM[202] : saved.reduceMotion
+
+// ========================
+// Static Values
+// ========================
+
+public value Static_EnableSound = 0;
+public value Static_Alpha = 0;
+
+// ========================
+// Events
+// ========================
+
+event ObjectMain
+    if Static_EnableSound == true
+		object.waterfallLoopTimer--
+		if object.waterfallLoopTimer <= 0
+			object.waterfallLoopTimer = 31
+			if object.playingWaterfallLoop == false
+                PlaySfx(SfxName[Waterfall], false)
+                StopSfx(SfxName[Waterfall Loop])
+				object.playingWaterfallLoop = true
+			else
+				StopSfx(SfxName[Waterfall])
+				PlaySfx(SfxName[Waterfall Loop], false)
+			end if
+		end if
+    else
+ 		object.playingWaterfallLoop = false
+		object.waterfallLoopTimer   = 0    
+    end if 
+
+    object.inkEffect = INK_ALPHA
+
+    if object.alpha > 100
+        object.timer++
+        object.timer %= 2
+
+        object.drawOrder = 6
+    else
+        object.timer++
+        object.timer %= 10
+
+        object.drawOrder = 3
+    end if 
+end event
+
+event ObjectDraw
+    temp0 = Static_Alpha
+    temp0 -= object.alpha
+
+    temp1 = temp0
+    temp1 >>= 2
+
+    Abs(temp0)
+
+    //Make sure it's exactly in the spot
+    if temp0 < 8
+        if object.alpha > Static_Alpha
+            object.alpha--
+        else
+            if object.alpha < Static_Alpha
+                object.alpha++
+            else
+                object.alpha = Static_Alpha
+            end if
+        end if
+    else
+        object.alpha += temp1
+    end if	
+
+    temp0 = 0
+    temp1 = screen.xsize
+    temp1 += screen.xcenter
+    while temp0 < temp1
+
+        temp2 = 0
+        temp3 = screen.xsize
+        temp3 += screen.xcenter
+
+        while temp2 < temp3
+            if object.timer == 0        
+                if saved.reduceMotion == 0
+                    Rand(object.frame, 5)
+                    Rand(object.direction, 2)
+                end if
+            end if 
+
+            temp4 = FX_INK
+            temp4 += FX_FLIP
+
+            DrawSpriteScreenFX(object.frame, temp4, temp0, temp2)
+
+            if object.alpha <= 100
+                temp2 += 56
+            else
+                if object.timer == 0
+                    if saved.reduceMotion == 0
+                         Rand(object.value3, 20)
+                    else
+                        object.value3 = 20
+                    end if
+                end if 
+                temp2 += 36
+                temp2 += object.value3
+            end if  
+        loop
+
+        if object.alpha <= 100
+            temp0 += 80
+        else
+            if object.timer == 0
+                if saved.reduceMotion == 0
+                     Rand(object.value4, 60)
+                else
+                    object.value4 = 60
+                end if            
+            end if 
+            temp0 += 20
+            temp0 += object.value4      
+        end if   
+    loop
+end event
+
+event ObjectStartup
+    LoadSpriteSheet("FNATFMenu/Menu.gif")
+
+    // Static
+	SpriteFrame(-40, -23, 80, 56, 1, 1) 
+	SpriteFrame(-40, -23, 80, 56, 97, 55) 
+	SpriteFrame(-40, -23, 80, 56, 55, 97) 
+	SpriteFrame(-40, -23, 80, 56, 88, 91) 
+	SpriteFrame(-40, -23, 80, 56, 91, 88) 
+
+    Static_Alpha       = 0
+    Static_EnableSound = false
+end event
+
+
+// ========================
+// Editor Events
+// ========================
+
+event RSDKDraw
+    DrawSprite(0)
+end event
+
+
+event RSDKLoad
+    LoadSpriteSheet("Global/Display.gif")
+    SpriteFrame(-16, -16, 32, 32, 1, 143)		// #0 - "Script" Icon
+end event

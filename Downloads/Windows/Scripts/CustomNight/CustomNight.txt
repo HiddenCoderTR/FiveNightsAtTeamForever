@@ -1,0 +1,390 @@
+// ----------------------------------
+// RSDK Project: Five Nights At Team Forever
+// Script Description: Custom Night Menu
+// Script Author: Casteor573
+// ----------------------------------
+
+
+// Priority
+private alias Object.Value0 : Object.Timer     //	you know this one  
+private alias Object.Value1 : Object.TouchTimer
+
+public alias saveRAM[6010] : custom.serpent
+public alias saveRAM[6011] : custom.soink
+public alias saveRAM[6012] : custom.shrine
+public alias saveRAM[6013] : custom.timely
+
+reserve function CN_StupidTouchRects
+
+function CN_StupidTouchRects
+	//para android	touch rects
+	CheckTouchRect(0, 0, screen.xsize, screen.ysize)
+	if checkResult == -1
+		Object.TouchTimer = false
+	end if
+	if Object.TouchTimer == 0
+		//show stage
+		temp0 = 0
+		temp0 += screen.xcenter
+		temp0 -= 164
+		temp1 = 0
+		temp1 += screen.xcenter
+		temp1 -= 139
+		CheckTouchRect(temp0, 155, temp1, 171)
+		if CheckResult > -1
+			Object.TouchTimer = 1
+			if custom.serpent > 0
+				custom.serpent--
+			end if
+			PlaySfx(SfxName[Blip], false)
+		end if	
+		
+		temp0 += 48
+		temp1 += 50
+		CheckTouchRect(temp0, 155, temp1, 171)
+		if CheckResult > -1
+			Object.TouchTimer = 1
+			if custom.serpent < 20
+				custom.serpent++
+			end if					
+			PlaySfx(SfxName[Blip], false)
+		end if					
+
+		temp0 += 35
+		temp1 += 35
+		CheckTouchRect(temp0, 155, temp1, 171)
+		if CheckResult > -1
+			Object.TouchTimer = 1
+			if custom.soink > 0
+				custom.soink--
+			end if
+			PlaySfx(SfxName[Blip], false)
+		end if	
+
+		temp0 += 48
+		temp1 += 50
+		CheckTouchRect(temp0, 155, temp1, 171)
+		if CheckResult > -1
+			Object.TouchTimer = 1
+			if custom.soink < 20
+				custom.soink++
+			end if						
+			PlaySfx(SfxName[Blip], false)
+		end if	
+
+		temp0 += 35
+		temp1 += 35
+		CheckTouchRect(temp0, 155, temp1, 171)
+		if CheckResult > -1
+			Object.TouchTimer = 1
+			if custom.shrine > 0
+				custom.shrine--
+			end if
+			PlaySfx(SfxName[Blip], false)
+		end if	
+
+		temp0 += 48
+		temp1 += 50
+		CheckTouchRect(temp0, 155, temp1, 171)
+		if CheckResult > -1
+			Object.TouchTimer = 1
+			if custom.shrine < 20
+				custom.shrine++
+			end if						
+			PlaySfx(SfxName[Blip], false)
+		end if			
+
+		temp0 += 35
+		temp1 += 35
+		CheckTouchRect(temp0, 155, temp1, 171)
+		if CheckResult > -1
+			Object.TouchTimer = 1
+			if custom.timely > 0
+				custom.timely--
+			end if
+			PlaySfx(SfxName[Blip], false)
+		end if	
+
+		temp0 += 48
+		temp1 += 50
+		CheckTouchRect(temp0, 155, temp1, 171)
+		if CheckResult > -1
+			Object.TouchTimer = 1
+			if custom.timely < 20
+				custom.timely++
+			end if						
+			PlaySfx(SfxName[Blip], false)
+		end if	
+
+
+		temp0 = 0
+		temp0 += screen.xcenter
+		temp0 -= 18
+		temp1 = 0
+		temp1 += screen.xcenter
+		temp1 += 2
+		CheckTouchRect(temp0, 214, temp1, 228)
+		if CheckResult > -1
+
+			custom.serpent = 0
+			custom.soink   = 0
+			custom.shrine  = 0
+			custom.timely  = 0
+
+			Object.TouchTimer = 1
+			PlaySfx(SfxName[Door], false)	
+		end if	
+
+		temp0 += 20
+		temp1 += 22
+		CheckTouchRect(temp0, 214, temp1, 228)
+		if CheckResult > -1
+
+			custom.serpent = 5
+			custom.soink   = 5
+			custom.shrine  = 5
+			custom.timely  = 5
+
+			Object.TouchTimer = 1
+			PlaySfx(SfxName[Door], false)	
+		end if	
+
+		temp0 += 20
+		temp1 += 22
+		CheckTouchRect(temp0, 214, temp1, 228)
+		if CheckResult > -1
+
+			custom.serpent = 10
+			custom.soink   = 10
+			custom.shrine  = 10
+			custom.timely  = 10
+
+			Object.TouchTimer = 1
+			PlaySfx(SfxName[Door], false)
+		end if	
+
+		temp0 += 20
+		temp1 += 22
+		CheckTouchRect(temp0, 214, temp1, 228)
+		if CheckResult > -1
+
+			custom.serpent = 15
+			custom.soink   = 15
+			custom.shrine  = 15
+			custom.timely  = 15
+
+			Object.TouchTimer = 1
+			PlaySfx(SfxName[Door], false)
+		end if	
+
+		temp0 += 20
+		temp1 += 22
+		CheckTouchRect(temp0, 214, temp1, 228)
+		if CheckResult > -1
+
+			custom.serpent = 20
+			custom.soink   = 20
+			custom.shrine  = 20
+			custom.timely  = 20
+
+			Object.TouchTimer = 1
+			PlaySfx(SfxName[Door], false)
+		end if	
+
+
+		temp0 = 0
+		temp0 += screen.xcenter
+		temp0 -= 146
+		temp1 = 0
+		temp1 += screen.xcenter
+		temp1 -= 105
+		CheckTouchRect(temp0, 193, temp1, 228)
+		if CheckResult > -1
+			inputPress.buttonB = 1
+			Object.TouchTimer = 1
+		end if			
+
+		temp0 = 0
+		temp0 += screen.xcenter
+		temp0 += 105
+		temp1 = 0
+		temp1 += screen.xcenter
+		temp1 += 146
+		CheckTouchRect(temp0, 193, temp1, 228)
+		if CheckResult > -1
+			inputPress.start = 1
+			Object.TouchTimer = 1
+		end if			
+	end if
+end function
+
+event ObjectMain
+	switch object.state	
+		// fade in
+		case 0
+			object.timer = 255
+			object.state++
+			SetClassicFadeIn(0, 0, 0, object.timer) 
+		break
+		case 1
+			if object.timer > 0
+				object.timer -= 8
+			else
+				PlayMusic(0)
+				object.state++
+			end if
+			SetClassicFadeIn(0, 0, 0, object.timer) 
+		break	
+		case 2
+			CallFunction(CN_StupidTouchRects)
+
+			if inputpress.start == true
+				PlaySfx(SfxName[Camera], false)
+				object.state++
+			end if
+
+			if inputpress.buttonB == true
+				PlaySfx(SfxName[Camera], false)
+				object.state = 4
+			end if			
+		break	
+		case 3
+			object.timer += 16
+			music.volume -= 8
+			if object.timer > 384
+				WriteSaveRAM()
+				stage.listPos = 6
+				stage.activeList = REGULAR_STAGE
+				LoadStage()				
+			end if	
+			SetClassicFadeOut(0, 0, 0, object.timer) 			
+		break
+		case 4
+			object.timer += 16
+			music.volume -= 8
+			if object.timer > 640
+				stage.listPos = 0
+				stage.activeList = PRESENTATION_STAGE
+				SkipTFScreen = true
+				LoadStage()				
+			end if	
+			SetClassicFadeOut(0, 0, 0, object.timer) 			
+		break		
+	end switch
+end event
+
+event ObjectDraw
+	//looping bg
+	temp0 = 0
+	while temp0 < screen.ysize
+		temp1 = 0
+		while temp1 < screen.xsize
+			DrawSpriteScreenXY(10, temp1, temp0)
+			temp1 += 64
+		loop
+		temp0 += 64
+	loop	
+
+	DrawSpriteScreenXY(11, screen.xcenter, 32)
+
+	//key
+	// temp0, selection count
+	// temp1  xpos
+	// temp2  icon
+	temp0 = 0
+	temp1 = screen.xcenter
+	temp1 -= 126
+	while temp0 < 4
+		temp2 = 12
+		temp2 += temp0
+		DrawSpriteScreenXY(temp2, temp1, screen.ycenter)
+		temp1 += 84 
+		temp0++
+	loop
+
+	//the numbers
+	temp3 = screen.xcenter
+	temp3 -= 122
+	temp4 = screen.ycenter
+	temp4 += 44
+	DrawNumbers(0, temp3, temp4, custom.serpent, 2, 11, 0)
+	temp3 += 84
+	DrawNumbers(0, temp3, temp4, custom.soink, 2, 11, 0)
+	temp3 += 84
+	DrawNumbers(0, temp3, temp4, custom.shrine, 2, 11, 0)
+	temp3 += 84
+	DrawNumbers(0, temp3, temp4, custom.timely, 2, 11, 0)	
+
+	DrawSpriteScreenXY(16, screen.xcenter, 220)
+
+	temp1 = screen.xcenter
+	temp1 -= 126
+	DrawSpriteScreenXY(18, temp1, 210)
+
+	temp1 = screen.xcenter
+	temp1 += 126
+	DrawSpriteScreenXY(17, temp1, 210)	
+
+	DrawSpriteScreenXY(19, touchscreen[0].xpos, touchscreen[0].ypos)
+end event
+
+event ObjectStartup
+	SetPresenceDetails("Setting up the Custom Night")
+	SetPresenceLargeImage("custom", false)
+	UpdatePresence()
+
+	LoadSpriteSheet("CustomNight/Objects.gif")
+	
+	SetMusicTrack("CustomNight.ogg", 0, 1)
+
+	// Place the HUD object into reserved object slot 4 and initialise its values
+	Object[1].Type = TypeName[Custom Night]
+	// The object should always be run, regardless if it's within camera bounds or not
+	Object[1].Priority = PRIORITY_ACTIVE
+	// Make the HUD draw ontop of all other sprites, too
+	Object[1].DrawOrder = 4
+
+	//0-9 Numbers
+	temp0 = 1
+	while temp0 < 121
+		SpriteFrame(-6, -6, 11, 12, temp0, 1)
+		temp0 += 12
+	loop
+	
+	//10 bg looping
+	SpriteFrame(0, 0, 64, 64, 1, 27) 	
+	//11 CUSTOM NIGHT
+	SpriteFrame(-88, -8, 176, 15, 134, 1) 
+
+	//12 - 15 portraits 
+	temp0 = 66
+	while temp0 < 326
+		SpriteFrame(-32, -51, 64, 102, temp0, 27)
+		temp0 += 65
+	loop
+
+	//16
+	SpriteFrame(-87, -5, 174, 10, 66, 130) 	
+	//17
+	SpriteFrame(-16, -16, 32, 32, 326, 1) 	
+	SpriteFrame(-16, -16, 32, 32, 326, 34) 		//18
+
+	SpriteFrame(0, 0, 12, 21, 311, 1)	//19
+end event
+
+
+// ========================
+// Editor events
+// ========================
+
+event RSDKDraw
+	DrawSprite(0)
+end event
+
+
+event RSDKLoad
+	LoadSpriteSheet("3D_Test/Objects.gif")
+	SpriteFrame(0, 0, 24, 16, 206, 58)
+
+	SetVariableAlias(ALIAS_VAR_PROPVAL, "unused")
+end event

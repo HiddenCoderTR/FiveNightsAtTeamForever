@@ -1,0 +1,616 @@
+//// ========================
+// RSDK Project: FNATF
+// Script Name: Options
+// Script Author: KarlEmerald
+// ========================
+
+// ========================
+// Aliases
+// ========================
+
+private alias object.value0  : object.timer
+private alias object.value1  : object.textX
+private alias object.value2  : object.textY
+private alias object.value3  : object.movementInput
+private alias object.value4  : object.movementInputTarget
+private alias object.value5  : object.currentLine
+private alias object.value6  : object.menuLine
+private alias object.value7  : object.textAlign
+private alias object.value8  : object.marginX
+private alias object.value9  : object.highlighterX
+private alias object.value10 : object.highlighterY
+private alias object.value11 : object.highlighterXTarget
+private alias object.value12 : object.highlighterYTarget
+
+private alias 0 : TEXT_LEFT_ALIGN
+private alias 1 : TEXT_RIGHT_ALIGN
+private alias 2 : TEXT_CENTER_ALIGN
+
+// ========================
+// Static Values
+// ========================
+
+private value GameOptions_Unlocked = 0;
+
+// ========================
+// Function Declarations
+// ========================
+
+// ========================
+// Tables
+// ========================
+
+// ========================
+// Function Definitions
+// ========================
+
+// ========================
+// Events
+// ========================
+
+event ObjectMain
+
+    object.inkEffect = INK_ALPHA
+
+    switch object.state
+    case 0
+        object.alpha = 0
+        if inputPress.buttonB == 1
+            object.state = 3
+        end if
+        object.state++
+        break
+    case 1
+        object.movementInput = object.alpha
+        object.movementInputTarget = 255
+        CallFunction(Options_MovementFunc)
+        object.alpha = object.movementInput
+
+        if inputPress.buttonB == 1
+            object.state = 3
+        end if
+
+        if object.alpha == 255
+            object.state++
+        end if
+        break
+    case 2
+        if inputPress.buttonB == 1
+            object.state++
+        end if
+        break   
+    case 3
+        object.movementInput = object.alpha
+        object.movementInputTarget = 0
+        CallFunction(Options_MovementFunc)
+        object.alpha = object.movementInput
+
+        if object.alpha == 0
+            ResetObjectEntity(object.entityPos, 0, 0, 0, 0)
+        end if
+        break
+    end switch
+
+    CheckEqual(saveRAM[6001], 1)
+    temp0 = checkResult
+    CheckEqual(saveRAM[6002], 1)
+    temp0 |= checkResult
+    CheckEqual(saveRAM[6003], 1)
+    temp0 |= checkResult
+    if temp0 == 1
+        GameOptions_Unlocked = 1
+    else
+        GameOptions_Unlocked = 0
+    end if
+
+    if MenuControl_OptionsCur == 2
+        temp0 = inputPress.left
+        temp0 |= inputPress.right
+        if temp0 == 1
+            PlaySfx(SfxName[Error], false)
+        end if
+
+        switch MenuControl_OptionsHighlight
+            case 0 //Display Highlighted
+                break
+            case 1 //Mark... i made a steak
+                temp0 = inputPress.left
+                temp0 |= inputPress.right
+                if temp0 == 1
+                    saved.mouse ^= 1
+                end if
+                break
+            case 2 //Lights
+                temp0 = inputPress.left
+                temp0 |= inputPress.right
+                if temp0 == 1
+                    saved.lights ^= 1
+                end if
+                break
+            case 3 //Sonic
+                temp0 = inputPress.left
+                temp0 |= inputPress.right
+                if temp0 == 1
+                    saved.sonic ^= 1
+                end if
+                break
+            case 4 //Tails
+                temp0 = inputPress.left
+                temp0 |= inputPress.right
+                if temp0 == 1
+                    saved.tails ^= 1
+                end if
+                break
+            case 5 //Dog
+                temp0 = inputPress.left
+                temp0 |= inputPress.right
+                if temp0 == 1
+                    saved.dog ^= 1
+                end if
+                break
+            case 6 //Radar
+                temp0 = inputPress.left
+                temp0 |= inputPress.right
+                if temp0 == 1
+                    saved.radar ^= 1
+                end if
+                break
+        end switch
+    else
+        object.alpha = 0
+        object.state = 0    
+	end if
+end event
+
+
+event ObjectDraw
+    if MenuControl_OptionsCur == 2
+
+		temp0 = 0
+
+        // Please account for when things arent unlocked
+        if GameOptions_Unlocked == 0
+            // 2 options   
+            // Game, Mouse controls 
+		    MenuControl_OptionsLimit = 2
+        else
+            // starting at one and increases for each money sign in the text file, refer to GameEN for info
+            MenuControl_OptionsLimit = 1
+
+            GetTextInfo(temp1, object.propertyValue, TEXTINFO_ROWCOUNT, 0, 0)
+            
+            while temp0 < temp1
+                GetTextInfo(temp2, object.propertyValue, TEXTINFO_TEXTDATA, temp0, 0)
+                if temp2 == TEXTID_MONEYSIGN
+                    MenuControl_OptionsLimit++
+                end if
+                temp0++
+            loop
+
+        end if
+
+        SetActivePalette(1, 0, 255)
+
+        object.textX = screen.xcenter
+        object.textX -= 75
+        object.textX += MenuControl_OptionDescX
+        object.textY = 35
+        object.textY -= MenuControl_OptionDescY
+
+        CallFunction(Options_Header)
+        
+        temp0 = screen.xcenter
+        temp0 -= 96
+        temp0 += MenuControl_OptionDescX
+
+        temp1 = object.alpha
+        temp1 >>= 2
+        temp2 = 55
+        temp2 -= MenuControl_OptionDescY
+        DrawRect(temp0, temp2, screen.xcenter, 1, color2, color2, color2, object.alpha)
+
+        object.movementInput = object.highlighterX
+        object.movementInputTarget = object.highlighterXTarget
+        CallFunction(Options_MovementFunc)
+        object.highlighterX = object.movementInput
+
+        object.movementInput = object.highlighterY
+        object.movementInputTarget = object.highlighterYTarget
+        CallFunction(Options_MovementFunc)
+        object.highlighterY = object.movementInput
+
+        if MenuControl_OptionsHighlight > 0
+            temp0 = object.highlighterX
+            temp0 -= 12
+            temp1 = object.highlighterY
+            temp1 -= 3
+            temp2 = screen.xcenter
+            temp2 += 50
+        else    
+            temp0 = screen.xcenter
+            temp0 -= 113
+            temp1 = 65
+            temp1 -= MenuControl_OptionDescY       
+            temp2 = 0
+
+            object.highlighterX = temp0
+            object.highlighterY = temp1
+            object.highlighterXTarget = temp0
+            object.highlighterYTarget = temp1   
+        end if
+
+        DrawRect(temp0, temp1, temp2, 20, color2, color2, color2, object.alpha)
+
+        if GameOptions_Unlocked == 0   
+            LoadSpriteSheet("FNATFMenu/Menu.gif")
+            DrawSpriteScreenFX(186, FX_INK, screen.xcenter, screen.ycenter)
+            LoadSpriteSheet("FNATFMenu/Text.gif")     
+
+            // Alyssa Note: Hi someone, please edit this so it only shows the Mouse toggle, as this should always be accessible to the user. Thank you!
+
+            // Draw the options.
+            arrayPos0 = 3
+            GetTextInfo(arrayPos1, object.propertyValue, TEXTINFO_ROWCOUNT, 0, 0)
+            object.menuLine = 1
+            object.marginX = screen.xcenter
+            object.marginX -= 100
+            object.marginX += MenuControl_OptionDescX
+            object.textY = 68
+            object.textY -= MenuControl_OptionDescY
+            
+            while arrayPos0 < arrayPos1
+                GetTextInfo(temp0, object.propertyValue, TEXTINFO_TEXTDATA, arrayPos0, 0)
+                CheckEqual(arrayPos0, 3)
+                temp1 = checkResult
+                if temp1 == 1
+                    object.currentLine = arrayPos0
+                    if arrayPos0 != 3
+                        object.currentLine++
+                    end if		
+                    if MenuControl_OptionsHighlight == object.menuLine
+                        MenuControl_OptionDescLine = object.currentLine
+                        MenuControl_OptionDescLine++
+                    end if
+
+                    object.textX = object.marginX
+                    object.textAlign = TEXT_LEFT_ALIGN
+                    CallFunction(Options_DrawText)
+
+                    CallFunction(Options_GrabSaveRAM)
+
+                    //saved lights is unique as its on by default
+                    object.currentLine += 3
+                
+                    switch checkResult
+                    case 10
+                        object.currentLine += saved.mouse
+                        break
+                    case 11
+                            if saved.lights == 0
+                                object.currentLine += 7
+                            else
+                                object.currentLine += 6
+                            end if
+                        break                        
+                    end switch    
+
+                    object.textX = object.marginX
+                    object.textX += screen.xcenter
+                    object.textX += 15
+                    object.textAlign = TEXT_RIGHT_ALIGN			
+                    CallFunction(Options_DrawText)
+
+                    object.textY += 21
+                    object.marginX -= 7
+                    object.menuLine++
+                end if	
+                arrayPos0++
+            loop
+        else
+            // Draw the options.
+            arrayPos0 = 3
+            GetTextInfo(arrayPos1, object.propertyValue, TEXTINFO_ROWCOUNT, 0, 0)
+            object.menuLine = 1
+            object.marginX = screen.xcenter
+            object.marginX -= 100
+            object.marginX += MenuControl_OptionDescX
+            object.textY = 68
+            object.textY -= MenuControl_OptionDescY
+            
+            while arrayPos0 < arrayPos1
+                GetTextInfo(temp0, object.propertyValue, TEXTINFO_TEXTDATA, arrayPos0, 0)
+                CheckEqual(temp0, TEXTID_MONEYSIGN)
+                temp1 = checkResult
+                CheckEqual(arrayPos0, 3)
+                temp1 |= checkResult
+                if temp1 == 1
+                    object.currentLine = arrayPos0
+                    if arrayPos0 != 3
+                        object.currentLine++
+                    end if		
+                    if MenuControl_OptionsHighlight == object.menuLine
+                        MenuControl_OptionDescLine = object.currentLine
+                        MenuControl_OptionDescLine++
+                    end if
+
+                    object.textX = object.marginX
+                    object.textAlign = TEXT_LEFT_ALIGN
+                    CallFunction(Options_DrawText)
+
+                    CallFunction(Options_GrabSaveRAM)
+
+                    //saved lights is unique as its on by default
+                    object.currentLine += 3
+                
+                    switch checkResult	
+                    case 10
+                        object.currentLine += saved.mouse
+                        break
+                    case 11
+                        object.currentLine += saved.lights
+                        break                        
+                    case 12
+                        object.currentLine += saved.sonic
+                        break
+                    case 13
+                        object.currentLine += saved.tails
+                        break
+                    case 14
+                        object.currentLine += saved.dog
+                        break
+                    case 15
+                        object.currentLine += saved.radar
+                        break
+                    case 16
+                        object.currentLine += saved.MirrorMode
+                        break
+                    case 17
+                        object.currentLine++
+                        break
+                    case 200
+                        arrayPos2 = checkResult
+                        object.currentLine += saveRAM[arrayPos2]
+                        break       
+                    case 201 // WHY DID YOU MAKE ME DO THIS???????
+                        object.currentLine += saved.graphics
+                        break     	
+                    end switch    
+
+                    object.textX = object.marginX
+                    object.textX += screen.xcenter
+                    object.textX += 15
+                    object.textAlign = TEXT_RIGHT_ALIGN			
+                    CallFunction(Options_DrawText)
+
+                    object.textY += 21
+                    object.marginX -= 7
+                    object.menuLine++
+                end if	
+                arrayPos0++
+            loop
+
+        end if
+
+        SetActivePalette(0, 0, 255)
+    end if
+end event
+
+
+event ObjectStartup
+    LoadSpriteSheet("FNATFMenu/Text.gif")
+
+    //Options Font
+    SpriteFrame(0, 0, 3, 12, 129, 1)      // 0
+    SpriteFrame(0, 0, 6, 12, 133, 1)      // 1
+    SpriteFrame(0, 0, 10, 12, 140, 1)     // 2
+    SpriteFrame(0, 0, 9, 12, 151, 1)      // 3
+    SpriteFrame(0, 0, 9, 12, 161, 1)      // 4
+    SpriteFrame(0, 0, 9, 12, 171, 1)      // 5
+    SpriteFrame(0, 0, 3, 12, 181, 1)      // 6
+    SpriteFrame(0, 0, 4, 12, 185, 1)      // 7
+    SpriteFrame(0, 0, 4, 12, 190, 1)      // 8
+    SpriteFrame(0, 0, 7, 12, 195, 1)      // 9
+    SpriteFrame(0, 0, 9, 12, 203, 1)      // 10
+    SpriteFrame(0, 0, 3, 12, 213, 1)      // 11
+    SpriteFrame(0, 0, 7, 12, 217, 1)      // 12
+    SpriteFrame(0, 0, 3, 12, 225, 1)      // 13
+    SpriteFrame(0, 0, 11, 12, 229, 1)     // 14
+    SpriteFrame(0, 0, 7, 12, 241, 1)      // 15
+    SpriteFrame(0, 0, 5, 12, 249, 1)      // 16
+    SpriteFrame(0, 0, 7, 12, 129, 14)     // 17
+    SpriteFrame(0, 0, 7, 12, 137, 14)     // 18
+    SpriteFrame(0, 0, 7, 12, 145, 14)     // 19
+    SpriteFrame(0, 0, 7, 12, 153, 14)     // 20
+    SpriteFrame(0, 0, 7, 12, 161, 14)     // 21
+    SpriteFrame(0, 0, 7, 12, 169, 14)     // 22
+    SpriteFrame(0, 0, 7, 12, 177, 14)     // 23
+    SpriteFrame(0, 0, 7, 12, 185, 14)     // 24
+    SpriteFrame(0, 0, 3, 12, 193, 14)     // 25
+    SpriteFrame(0, 0, 3, 12, 197, 14)     // 26
+    SpriteFrame(0, 0, 6, 12, 201, 14)     // 27
+    SpriteFrame(0, 0, 6, 12, 208, 14)     // 28
+    SpriteFrame(0, 0, 6, 12, 215, 14)     // 29
+    SpriteFrame(0, 0, 6, 12, 222, 14)     // 30
+    SpriteFrame(0, 0, 10, 12, 229, 14)    // 31
+    SpriteFrame(0, 0, 9, 12, 240, 14)     // 32 A
+    SpriteFrame(0, 0, 8, 12, 129, 27)     // 33
+    SpriteFrame(0, 0, 9, 12, 138, 27)     // 34
+    SpriteFrame(0, 0, 9, 12, 148, 27)     // 35
+    SpriteFrame(0, 0, 7, 12, 158, 27)     // 36
+    SpriteFrame(0, 0, 7, 12, 166, 27)     // 37
+    SpriteFrame(0, 0, 9, 12, 174, 27)     // 38
+    SpriteFrame(0, 0, 11, 12, 184, 27)    // 39
+    SpriteFrame(0, 0, 5, 12, 196, 27)     // 40
+    SpriteFrame(0, 0, 8, 12, 202, 27)     // 41
+    SpriteFrame(0, 0, 9, 12, 211, 27)     // 42
+    SpriteFrame(0, 0, 6, 12, 221, 27)     // 43
+    SpriteFrame(0, 0, 11, 12, 228, 27)    // 44
+    SpriteFrame(0, 0, 9, 12, 240, 27)     // 45
+    SpriteFrame(0, 0, 10, 12, 129, 40)    // 46
+    SpriteFrame(0, 0, 7, 12, 140, 40)     // 47
+    SpriteFrame(0, 0, 10, 12, 148, 40)    // 48
+    SpriteFrame(0, 0, 7, 12, 159, 40)     // 49
+    SpriteFrame(0, 0, 7, 12, 167, 40)     // 50
+    SpriteFrame(0, 0, 9, 12, 175, 40)     // 51
+    SpriteFrame(0, 0, 10, 12, 185, 40)    // 52
+    SpriteFrame(0, 0, 9, 12, 196, 40)     // 53
+    SpriteFrame(0, 0, 15, 12, 206, 40)    // 54
+    SpriteFrame(0, 0, 9, 12, 222, 40)     // 55
+    SpriteFrame(0, 0, 11, 12, 232, 40)    // 56
+    SpriteFrame(0, 0, 9, 12, 244, 40)     // 57
+    SpriteFrame(0, 0, 4, 12, 129, 53)     // 58
+    SpriteFrame(0, 0, 11, 12, 134, 53)    // 59
+    SpriteFrame(0, 0, 4, 12, 146, 53)     // 60
+    SpriteFrame(0, 0, 5, 12, 151, 53)     // 61
+    SpriteFrame(0, 0, 7, 12, 157, 53)     // 62
+    SpriteFrame(0, 0, 4, 12, 165, 53)     // 63
+    SpriteFrame(0, 0, 9, 12, 240, 14)     // 64
+    SpriteFrame(0, 0, 8, 12, 129, 27)     // 65 
+    SpriteFrame(0, 0, 9, 12, 138, 27)     // 66 
+    SpriteFrame(0, 0, 9, 12, 148, 27)     // 67 
+    SpriteFrame(0, 0, 7, 12, 158, 27)     // 68 
+    SpriteFrame(0, 0, 7, 12, 166, 27)     // 69 
+    SpriteFrame(0, 0, 9, 12, 174, 27)     // 70 
+    SpriteFrame(0, 0, 11, 12, 184, 27)    // 71 
+    SpriteFrame(0, 0, 5, 12, 196, 27)     // 72 
+    SpriteFrame(0, 0, 8, 12, 202, 27)     // 73 
+    SpriteFrame(0, 0, 9, 12, 211, 27)     // 74 
+    SpriteFrame(0, 0, 6, 12, 221, 27)     // 75
+    SpriteFrame(0, 0, 11, 12, 228, 27)    // 76 
+    SpriteFrame(0, 0, 9, 12, 240, 27)     // 77 
+    SpriteFrame(0, 0, 10, 12, 129, 40)    // 78 
+    SpriteFrame(0, 0, 7, 12, 140, 40)     // 79 
+    SpriteFrame(0, 0, 10, 12, 148, 40)    // 80 
+    SpriteFrame(0, 0, 7, 12, 159, 40)     // 81 
+    SpriteFrame(0, 0, 7, 12, 167, 40)     // 82 
+    SpriteFrame(0, 0, 9, 12, 175, 40)     // 83 
+    SpriteFrame(0, 0, 10, 12, 185, 40)    // 84 
+    SpriteFrame(0, 0, 9, 12, 196, 40)     // 85 
+    SpriteFrame(0, 0, 15, 12, 206, 40)    // 86 
+    SpriteFrame(0, 0, 9, 12, 222, 40)     // 87 
+    SpriteFrame(0, 0, 11, 12, 232, 40)    // 88 
+    SpriteFrame(0, 0, 9, 12, 244, 40)     // 89 
+    SpriteFrame(0, 0, 5, 12, 170, 53)     // 90 
+    SpriteFrame(0, 0, 3, 12, 176, 53)     // 91
+    SpriteFrame(0, 0, 5, 12, 180, 53)     // 92
+    SpriteFrame(0, 0, 9, 12, 186, 53)     // 93
+
+    // Header
+    SpriteFrame(0, 0, 17, 18, 138, 110)   // 94 A
+    SpriteFrame(0, 0, 17, 18, 156, 110)   // 95 B
+    SpriteFrame(0, 0, 17, 18, 174, 110)   // 96 C
+    SpriteFrame(0, 0, 17, 18, 192, 110)   // 97 D
+    SpriteFrame(0, 0, 16, 18, 210, 110)   // 98 E
+    SpriteFrame(0, 0, 16, 18, 227, 110)   // 99 F
+    SpriteFrame(0, 0, 18, 18, 244, 110)   // 100 G
+    SpriteFrame(0, 0, 17, 18, 263, 110)   // 101 H
+    SpriteFrame(0, 0, 8, 18, 281, 110)    // 102 I
+    SpriteFrame(0, 0, 16, 18, 290, 110)   // 103 J
+    SpriteFrame(0, 0, 18, 18, 307, 110)   // 104 K
+    SpriteFrame(0, 0, 17, 18, 326, 110)   // 105 L
+    SpriteFrame(0, 0, 18, 18, 344, 110)   // 106 M
+    SpriteFrame(0, 0, 17, 18, 363, 110)   // 107 N
+    SpriteFrame(0, 0, 18, 18, 138, 129)   // 108 O
+    SpriteFrame(0, 0, 17, 18, 157, 129)   // 109 P
+    SpriteFrame(0, 0, 18, 18, 175, 129)   // 110 Q
+    SpriteFrame(0, 0, 17, 18, 194, 129)   // 111 R
+    SpriteFrame(0, 0, 18, 18, 213, 129)   // 112 S
+    SpriteFrame(0, 0, 18, 18, 232, 129)   // 113 T
+    SpriteFrame(0, 0, 16, 18, 248, 129)   // 114 U
+    SpriteFrame(0, 0, 16, 18, 268, 129)   // 115 V
+    SpriteFrame(0, 0, 17, 18, 285, 129)   // 116 W
+    SpriteFrame(0, 0, 17, 18, 303, 129)   // 117 X
+    SpriteFrame(0, 0, 17, 18, 326, 129)   // 118 Y
+    SpriteFrame(0, 0, 24, 18, 339, 129)   // 119 Z
+
+    // Accents header
+    SpriteFrame(0, -5, 17, 23, 1, 438)    // 120 À
+    SpriteFrame(0, -5, 17, 23, 19, 438)   // 121 Á
+    SpriteFrame(0, -5, 17, 23, 37, 438)   // 122 Â
+    SpriteFrame(0, -5, 17, 23, 55, 438)   // 123 Ã
+    SpriteFrame(0, -5, 17, 23, 73, 438)   // 124 Ä
+    SpriteFrame(0, -5, 17, 23, 91, 438)   // 125 Å
+    SpriteFrame(0, 0, 21, 18, 109, 443)   // 126 Æ
+    SpriteFrame(0, 0, 17, 23, 131, 443)   // 127 Ç
+    SpriteFrame(0, -5, 16, 23, 166, 438)  // 128 È
+    SpriteFrame(0, -5, 16, 23, 149, 438)  // 129 É
+    SpriteFrame(0, -5, 16, 23, 183, 438)  // 130 Ê
+    SpriteFrame(0, -5, 16, 23, 217, 438)  // 131 Ë
+    SpriteFrame(0, -5, 8, 23, 243, 438)   // 132 Ì
+    SpriteFrame(0, -5, 8, 23, 234, 438)   // 133 Í
+    SpriteFrame(0, -5, 8, 23, 252, 438)   // 134 Î
+    SpriteFrame(0, -5, 8, 23, 261, 438)   // 135 Ï
+    SpriteFrame(0, 0, 17, 18, 1, 474)     // 136 Ð
+    SpriteFrame(0, -5, 17, 23, 19, 469)   // 137 Ñ
+    SpriteFrame(0, -5, 18, 23, 37, 469)   // 138 Ò
+    SpriteFrame(0, -5, 18, 23, 56, 469)   // 139 Ó
+    SpriteFrame(0, -5, 18, 23, 75, 469)   // 140 Ô
+    SpriteFrame(0, -5, 18, 23, 94, 469)   // 141 Õ
+    SpriteFrame(0, -5, 18, 23, 113, 469)  // 142 Ö
+    SpriteFrame(0, -5, 18, 23, 132, 469)  // 143 ×
+    SpriteFrame(0, -5, 18, 23, 151, 469)  // 144 Ø
+    SpriteFrame(0, -5, 18, 23, 170, 469)  // 145 Ù
+    SpriteFrame(0, -5, 18, 23, 189, 469)  // 146 Ú
+    SpriteFrame(0, -5, 17, 23, 207, 469)  // 147 Û
+    SpriteFrame(0, -5, 17, 23, 225, 469)  // 148 Ü
+    SpriteFrame(0, -5, 17, 23, 243, 469)  // 149 Ý
+    SpriteFrame(0, -5, 17, 23, 261, 469)  // 150 Þ
+    SpriteFrame(0, -5, 17, 23, 279, 469)  // 151 ß
+
+    // Accents options
+    SpriteFrame(0, -4, 9, 16, 1, 402)     // 152 à
+    SpriteFrame(0, -4, 9, 16, 11, 402)    // 153 á
+    SpriteFrame(0, -4, 9, 16, 21, 402)    // 154 â
+    SpriteFrame(0, -4, 9, 16, 31, 402)    // 155 ã
+    SpriteFrame(0, -4, 9, 16, 41, 402)    // 156 ä
+    SpriteFrame(0, -4, 9, 16, 51, 402)    // 157 å
+    SpriteFrame(0, 0, 9, 12, 61, 406)     // 158 æ
+    SpriteFrame(0, 0, 9, 14, 71, 406)     // 159 ç
+    SpriteFrame(0, -4, 7, 16, 81, 402)    // 160 è
+    SpriteFrame(0, -4, 7, 16, 89, 402)    // 161 é
+    SpriteFrame(0, -4, 7, 16, 97, 402)    // 162 ê
+    SpriteFrame(0, -4, 7, 16, 105, 402)   // 163 ë
+    SpriteFrame(0, -4, 5, 16, 113, 402)   // 164 ì
+    SpriteFrame(0, -4, 5, 16, 119, 402)   // 165 í
+    SpriteFrame(0, -4, 5, 16, 125, 402)   // 166 î
+    SpriteFrame(0, -4, 7, 16, 131, 402)   // 167 ï
+    SpriteFrame(0, 0, 9, 12, 1, 425)      // 168 ð
+    SpriteFrame(0, -4, 9, 16, 11, 421)    // 169 ñ
+    SpriteFrame(0, -4, 10, 16, 21, 421)   // 170 ò
+    SpriteFrame(0, -4, 10, 16, 32, 421)   // 171 ó
+    SpriteFrame(0, -4, 10, 16, 43, 421)   // 172 ô
+    SpriteFrame(0, -4, 10, 16, 54, 421)   // 173 õ
+    SpriteFrame(0, -4, 10, 16, 65, 421)   // 174 ö
+    SpriteFrame(0, -1, 10, 13, 76, 424)   // 175 ÷
+    SpriteFrame(0, -4, 10, 16, 87, 421)   // 176 ø
+    SpriteFrame(0, -4, 10, 16, 98, 421)   // 177 ù
+    SpriteFrame(0, -4, 10, 16, 109, 421)  // 178 ú
+    SpriteFrame(0, -4, 10, 16, 120, 421)  // 179 û
+    SpriteFrame(0, -4, 10, 16, 131, 421)  // 180 ü
+    SpriteFrame(0, 0, 11, 12, 142, 425)   // 181 ý
+    SpriteFrame(0, 0, 8, 12, 154, 425)    // 182 þ
+    SpriteFrame(0, 0, 9, 12, 163, 425)    // 183 ÿ
+
+	SpriteFrame(-11, 1, 14, 14, 69, 132) //184 Submenu Arrow Left
+	SpriteFrame(-3, 1, 14, 14, 84, 132) //185 Submenu Arrow Left
+
+	SpriteFrame(-45, -57, 89, 104, 266, 166) //186 GIANT FUCKING LOCK
+
+    MenuControl_CurLimit++
+
+end event
+
+
+// ========================
+// Editor Events
+// ========================
+
+event RSDKDraw
+    DrawSprite(0)
+end event
+
+
+event RSDKLoad
+    LoadSpriteSheet("Global/Display.gif")
+    SpriteFrame(-16, -16, 32, 32, 1, 143)		// #0 - "Script" Icon
+end event

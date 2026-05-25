@@ -1,0 +1,282 @@
+// ----------------------------------
+// RSDK Project: Five Nights At Team Forever
+// Script Description: Soink
+// Script Author: Casteor573
+// ----------------------------------
+
+
+// Priority
+private alias Object.Value0 : Object.Timer    
+private alias Object.Value1 : Object.SoinkTimer     
+private alias Object.Value3 : Object.SoinkRandom   
+private alias Object.Value4 : Object.SoinkAI   
+private alias Object.Value5 : Object.ScareTimer    // time i wait before i kill you
+
+private alias Object.Value6 : Object.SoinkRise
+private alias Object.Value7 : Object.ShakeTimer
+private alias Object.Value8 : Object.HeadShake
+private alias Object.Value9 : Object.HeadScale
+private alias Object.Value10 : Object.ScareXpos
+
+private alias Object.Value11 : Object.RandomLocation1
+
+private alias Object.Value12 : Object.MoveTime
+
+private alias object.state : Soink.State
+
+public alias saveRAM[202] : saved.reduceMotion
+
+private alias Object[3].Value4 : Object.UsageBar
+private alias Object[4].Value3 : Object.LeftLight
+private alias Object[4].Value4 : Object.RightLight
+
+// This object handles the AI, the drawing on the cameras is handled in Camera Drawing
+private alias 0 : CAM_SHOWSTAGE_0
+private alias 1 : CAM_DININGHALL_1
+private alias 2 : CAM_BACKSTAGE_2
+private alias 3 : CAM_PIRATESCOVE_3
+private alias 4 : CAM_WESTHALL_4
+private alias 5 : CAM_CLOSET_5
+private alias 6 : CAM_WHALLCORNER_6
+private alias 7 : CAM_EASTHALL_7
+private alias 8 : CAM_EHALLCORNER_8
+private alias 9 : CAM_KITCHEN_9
+private alias 10 : CAM_BATHROOMS_10
+
+private alias 15 : SOINK_OFFICEDOOR
+private alias 16 : SOINK_WAITTOSCARE
+private alias 17 : SOINK_SCARE
+
+private alias Object[4].Value5 : Object.LeftDoorClosed
+private alias Object[4].Value6 : Object.RightDoorClosed
+
+event ObjectMain
+if Object[SLOT_TITLECARD].Type == TypeName[Blank Object]
+	switch Soink.state
+	case SOINK_OFFICEDOOR	//at your door
+		if Object.RightDoorClosed == 0	
+			//prepare to strike
+			Object.ScareTimer++
+			if Object.ScareTimer >= 350
+				//YOU LOSE
+				RDoorLocked = 1
+				object.state = SOINK_WAITTOSCARE	//enter office
+				Object.ScareTimer = 0
+			end if
+		else
+			Object.SoinkTimer++
+			if saved.sonic == 1
+				Object.MoveTime = 100
+			else
+				Object.MoveTime = 400
+			end if
+			rand(temp3, 100)
+			Object.MoveTime += temp3
+			if Object.SoinkTimer >= Object.MoveTime
+				Rand(Object.SoinkRandom, 20)
+				if Object.SoinkAI > Object.SoinkRandom 
+					if Object.RightLight == 1
+						StopSfx(SfxName[Hum])
+						Object.RightLight = 0
+						Object.UsageBar--
+					end if
+
+					if RWindowScare == 1
+						RWindowScare = 0
+					end if
+
+					//PlaySfx(SfxName[Block], 0)
+					Object.SoinkTimer = 0	
+					Object.ScareTimer = 0	
+					object[6].alpha = 355
+					Soink.state = CAM_DININGHALL_1		
+				end if	
+				Object.SoinkTimer = 0
+			end if			
+		end if	
+	break	
+
+	case SOINK_WAITTOSCARE
+		//just accept your fate man
+		Object.ScareTimer++
+		temp0 = 500
+		rand(temp1, 50)
+		temp0 += temp1
+		if Object.ScareTimer >= temp0
+			StopMusic()
+			PlaySfx(SfxName[Jumpscare], 0)	
+			object.frame = 11
+			PlayerJumpscared = 1
+			object.state++
+			Object.ScareTimer = 0
+		end if
+	break
+
+	case SOINK_SCARE
+		PlayerJumpscared = 1
+		if Object.SoinkRise > 140
+			Object.SoinkRise -= 16
+		else
+			Object.SoinkRise = 140
+		end if
+	break
+
+	default	
+		Object.SoinkRise = 180
+		//Object.SoinkAI = 20
+
+		Object.SoinkTimer++
+		Object.MoveTime = 400
+		rand(temp3, 100)
+		Object.MoveTime += temp3
+
+		if Object.SoinkTimer >= Object.MoveTime
+			//if AI is greater then a random number 0 to 19 (techincally 20 numbers)
+			// move
+			Rand(Object.SoinkRandom, 20)
+			//0, 1
+			Rand(Object.RandomLocation1, 2)
+			if Object.SoinkAI > Object.SoinkRandom 
+
+				if Object[6].value1 == Soink.State
+					object[6].alpha = 355
+				end if
+
+				PlaySfx(SfxName[Deep Steps], 0)	
+
+				//these align with the cameras he goes to
+				//state 10 is cam 10
+				//15+ is at the office watch out
+				switch Soink.state
+				case CAM_SHOWSTAGE_0
+					Soink.state = CAM_DININGHALL_1
+				break
+				case CAM_DININGHALL_1
+					if Object.RandomLocation1 >= 1
+						Soink.state = CAM_WESTHALL_4
+					else
+						Soink.state = CAM_BACKSTAGE_2
+					end if
+				break		
+				case CAM_BACKSTAGE_2
+					Soink.state = CAM_DININGHALL_1
+				break	
+				case CAM_WESTHALL_4
+					if Object.RandomLocation1 >= 1
+						Soink.state = CAM_WHALLCORNER_6
+					else
+						Soink.state = CAM_CLOSET_5	
+					end if
+				break				
+				//from the closet he can either go				
+				case CAM_CLOSET_5
+					if Object.RandomLocation1 >= 1
+						Soink.state = CAM_WHALLCORNER_6
+					else
+						Soink.state = CAM_WESTHALL_4	
+					end if
+				break			
+				case CAM_WHALLCORNER_6
+					// Given the way he is positioned, you cant see him when the door is already closed
+					// and since you cant see him the sound wont play
+					// bascially trolling you if you close the door too early
+					if Object.RightDoorClosed == 0
+						RWindowScare = 1
+					end if
+
+					if Object.RightLight == 1
+						StopSfx(SfxName[Hum])
+						Object.RightLight = 0
+						Object.UsageBar--
+					end if
+					object.alpha = 0
+					Soink.state = 15
+				break			
+				end switch	
+
+				if Object[6].value1 == Soink.State
+					object[6].alpha = 355
+				end if
+
+			end if
+			Object.SoinkTimer = 0		
+		end if
+		break
+	end switch
+
+	if object.state < 18
+		if OfficePower == 0
+			Soink.state = 18
+		end if
+	end if
+end if	
+
+end event
+
+event ObjectDraw
+	switch object.state
+		case SOINK_SCARE
+			if Object.ShakeTimer == 1
+				rand(Object.HeadShake, 8)
+			end if	
+
+			object.drawOrder = 5
+			if Object.ShakeTimer == 0
+				if Object.ScareXpos > screen.xcenter
+					Object.ScareXpos -= 24
+				else
+					Object.ShakeTimer = 1
+				end if
+			end if	
+
+			temp1 = 0
+			temp1 += Object.ScareXpos
+			temp1 += Object.HeadShake
+
+			DrawSpriteScreenXY(1, temp1, Object.SoinkRise)	//body
+
+			if saved.reduceMotion == 0
+				Object.HeadScale += 2
+				temp0 = 0
+				Sin256(temp0, Object.HeadScale)
+				temp0 /= 24
+				object.scale += temp0
+			end if
+			DrawSpriteScreenFX(0, FX_SCALE, temp1, Object.SoinkRise)	//head
+		break
+	end switch
+end event
+
+event ObjectStartup
+	LoadSpriteSheet("FNATF/Jumpscares.gif")
+
+	// Place the HUD object into reserved object slot 4 and initialise its values
+	Object[11].Type = TypeName[Soink]
+	
+	// The object should always be run, regardless if it's within camera bounds or not
+	Object[11].Priority = PRIORITY_ACTIVE
+	
+	Object[11].DrawOrder = 3
+	Object[11].ScareXpos = screen.xsize
+
+
+	SpriteFrame(-58, -79, 181, 157, 331, 1)// 0 head	
+	SpriteFrame(-74, 48, 148, 56, 513, 1) //	1 bod		
+end event
+
+
+// ========================
+// Editor events
+// ========================
+
+event RSDKDraw
+	DrawSprite(0)
+end event
+
+
+event RSDKLoad
+	LoadSpriteSheet("3D_Test/Objects.gif")
+	SpriteFrame(0, 0, 24, 16, 206, 58)
+
+	SetVariableAlias(ALIAS_VAR_PROPVAL, "unused")
+end event

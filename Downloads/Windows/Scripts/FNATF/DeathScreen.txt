@@ -1,0 +1,171 @@
+// ----------------------------------
+// RSDK Project: Five Nights At Team Forever
+// Script Description: HUD
+// Script Author: Casteor573
+// ----------------------------------
+
+private alias Object.Value0 : Object.Timer     //	you know this one  
+
+private alias Object.Value1 : Object.RedFade     // Initially set via a loop in the UFO script
+private alias Object.Value2 : Object.Selection     // Initially set via a loop in the UFO script
+private alias Object.Value3 : Object.TouchTimer
+// Priority Aliases
+private alias 2 : PRIORITY_ALWAYS         // Object will always update
+
+event ObjectMain
+	switch object.state
+		case 0
+			if PlayerJumpscared >= 1
+				object.timer++
+				if object.timer >= 100
+
+					StopMusic()
+
+					PlaySfx(SfxName[Death], 0)
+
+					StopSfx(SfxName[Hum])
+					StopSfx(SfxName[Fan])
+					StopSfx(SfxName[Shrine Kitchen])
+					stage.state = STAGE_FROZEN
+					
+					Object.RedFade = 255
+					object.state = 1
+					Object.timer = 0
+				end if	
+			end if
+		break
+		case 1
+			Object.timer++
+			if object.timer > 64
+				Object.RedFade -= 8
+			end if
+
+			if Object.RedFade <= 0
+				object.state++
+				PlayMusic(2)
+				object.timer = 0
+			end if
+		break
+		case 2
+			CheckTouchRect(0, 0, screen.xsize, screen.ysize)
+			if checkResult == -1
+				Object.TouchTimer = false
+			end if
+			if Object.TouchTimer == 0
+				CheckTouchRect(0, 160, screen.xsize, 180)
+				if CheckResult > -1
+					Object.Selection = 0
+					Object.TouchTimer = 1
+					inputpress[1].start = true
+				end if
+
+				CheckTouchRect(0, 180, screen.xsize, 205)
+				if CheckResult > -1
+					Object.Selection = 1
+					Object.TouchTimer = 1
+					inputpress[1].start = true
+				end if				
+			end if
+
+			if inputpress[1].down == 1
+				Object.Selection = 1
+				PlaySfx(SfxName[Blip], 0)
+			end if
+			if inputpress[1].up == 1
+				Object.Selection = 0
+				PlaySfx(SfxName[Blip], 0)
+			end if
+
+			if inputpress[1].start == true
+				PlaySfx(SfxName[Door], false)
+				object.state = 3
+			end if
+
+
+
+			
+		break
+		case 3
+			object.timer += 8
+
+			if object.timer > 512
+				if Object.Selection == 0
+					LoadStage()
+				else
+					stage.listPos = StageName[R - FNATF MENU]
+					stage.activeList = PRESENTATION_STAGE
+					LoadStage()
+				end if
+			end if
+	
+			SetClassicFadeOut(0, 0, 0, object.timer) 
+		break
+	end switch
+
+end event
+
+event ObjectDraw
+	if object.state > 0
+		DrawRect(0, 0, screen.xsize, screen.ysize, 0, 0, 0, 255)// 1	
+
+		//game over
+		DrawSpriteScreenXY(0, screen.xcenter, screen.ycenter)
+
+		temp0 = screen.ycenter
+		temp0 += 48
+
+		temp2 = 1
+		temp2 += Object.Selection
+		DrawSpriteScreenXY(temp2, screen.xcenter, temp0)	
+		temp0 += 20
+
+		temp2 = 3
+		temp2 += Object.Selection
+		DrawSpriteScreenXY(temp2, screen.xcenter, temp0)	
+
+		DrawRect(0, 0, screen.xsize, screen.ysize, color7, 0, 0, Object.RedFade)// 1	
+	end if
+
+end event
+
+event ObjectStartup
+	LoadSpriteSheet("FNATF/Objects.gif")
+
+	//0	-	GAME OVER
+	SpriteFrame(-133, -16, 265, 32, 73, 511)
+
+	// 1-2	Continue and dark version
+	SpriteFrame(-30, -4, 60, 7, 339, 511)	
+	SpriteFrame(-30, -4, 60, 7, 339, 527)
+
+	// 3-4 Return to Menu and darkened version
+	SpriteFrame(-58, -4, 116, 7, 339, 535)		
+	SpriteFrame(-58, -4, 116, 7, 339, 519)	
+
+	// Place the HUD object into reserved object slot 4 and initialise its values
+	Object[15].Type = TypeName[Death Screen]
+	
+	// The object should always be run, regardless if it's within camera bounds or not
+	Object[15].Priority = PRIORITY_ALWAYS
+	
+	// Make the HUD draw ontop of all other sprites, too
+	Object[15].DrawOrder = 5
+
+end event
+
+
+// ========================
+// Editor events
+// ========================
+
+event RSDKDraw
+	DrawSprite(0)
+end event
+
+
+event RSDKLoad
+	LoadSpriteSheet("3D_Test/Objects.gif")
+	SpriteFrame(0, 0, 24, 16, 206, 58)
+
+	SetVariableAlias(ALIAS_VAR_PROPVAL, "unused")
+end event

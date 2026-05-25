@@ -1,0 +1,329 @@
+// ----------------------------------
+// RSDK Project: Five Nights At Team Forever
+// Script Description: Phone Guy
+// Script Author: Casteor573
+// ----------------------------------
+
+
+// Priority
+private alias Object.Value0 : Object.Timer     //	you know this one  
+
+private alias Object.Value1 : Object.phoneDial
+private alias Object.Value2 : Object.phoneTimer
+private alias Object.Value3 : Object.phoneLine
+private alias Object.Value4 : Object.phoneLineTimer
+private alias Object.Value5 : Object.phoneLineTime
+private alias Object.Value6 : Object.PLSlower
+
+public alias saveRAM[200] : saved.language
+
+private table PhoneGuy_N1Times
+	167, 345, 474, 645, 811, 985, 1048, 1227, 1310, 1510, 1736, 1857, 1887, 2147, 2326, 2467, 2624, 2800, 3030, 3247, 3410, 3672, 3838, 4027, 4201, 4284, 4564, 4728, 5012, 5183, 5398, 5566, 5752, 5940, 6140, 6333, 6683, 6908, 7105, 7319, 7535, 7679, 7954, 8272, 8503, 8708, 9018, 9217, 9392, 9635, 9865, 10178, 10029, 10350, 999999 
+end table
+
+private table PhoneGuy_N2Times
+    191, 377, 576, 797, 1066, 1266, 1477, 1683, 1879, 2123, 2337, 2624, 2796, 3003, 3210, 999999
+end table
+
+private table PhoneGuy_N3Times
+	141, 310, 517, 767, 987, 1269, 1581, 1743, 1871, 1945, 2098, 2280, 2532, 2769,999999
+end table
+
+private table PhoneGuy_N4Times
+	164, 371, 553, 853, 1117, 1331, 1664, 1839, 2105, 2505, 999999
+end table
+
+private table PhoneGuy_N5Times
+	173, 411, 616, 878, 1139, 1341, 1447, 1608, 1925, 2026, 999999
+end table
+
+event ObjectMain
+	if Object[SLOT_TITLECARD].Type == TypeName[Blank Object]
+		if stage.actnum <= 5
+			object.phoneDial = true
+
+			if object.phoneDial == true
+				object.phoneTimer++
+				if object.phoneTimer == 100
+					PlaySfx(SfxName[Phone Dial], false)	
+				end if
+
+				if object.phoneTimer == 480
+					temp0 = stage.listPos
+					temp0 += 82
+					PlayVoice(temp0, false)
+					Object.phoneLine++
+					
+					object.phoneDial = 2
+					stage.timeEnabled = true
+				end if	
+			end if	
+
+			if object.phoneTimer > 480
+
+					object.phoneLineTimer++
+
+				switch stage.actnum
+					case 1
+						GetTableValue(temp0, object.phoneLineTime, PhoneGuy_N1Times)
+					break
+					case 2
+						GetTableValue(temp0, object.phoneLineTime, PhoneGuy_N2Times)
+					break
+					case 3
+						GetTableValue(temp0, object.phoneLineTime, PhoneGuy_N3Times)
+					break
+					case 4
+						GetTableValue(temp0, object.phoneLineTime, PhoneGuy_N4Times)
+					break
+					case 5
+						GetTableValue(temp0, object.phoneLineTime, PhoneGuy_N5Times)
+					break
+				end switch
+	
+				if Object.phoneLineTimer >= temp0
+					object.phoneLineTime++
+					Object.phoneLine++
+				end if
+			end if
+
+			switch stage.actnum
+				case 1
+					if Object.phoneTimer > 11000
+						temp0 = stage.listPos
+						temp0 += 82
+						StopVoice(temp0)
+						object.type = TypeName[Blank Object]
+					end if
+				break	
+				case 2
+					if Object.phoneTimer > 3600
+						temp0 = stage.listPos
+						temp0 += 82
+						StopVoice(temp0)
+						object.type = TypeName[Blank Object]
+					end if
+				break	
+				case 3
+					if Object.phoneTimer > 3200
+						temp0 = stage.listPos
+						temp0 += 82
+						StopVoice(temp0)
+						object.type = TypeName[Blank Object]
+					end if
+				break		
+				case 4
+					if Object.phoneTimer > 2900
+						temp0 = stage.listPos
+						temp0 += 82
+						StopVoice(temp0)
+						object.type = TypeName[Blank Object]
+					end if
+				break		
+				case 5
+					if Object.phoneTimer > 2500
+						temp0 = stage.listPos
+						temp0 += 82
+						StopVoice(temp0)
+						object.type = TypeName[Blank Object]
+					end if
+				break												
+			end switch
+
+			if PlayerJumpscared == 1
+				temp0 = stage.listPos
+				temp0 += 82
+				StopVoice(temp0)
+				object.type = TypeName[Blank Object]
+			end if
+
+			temp0 = 0
+			temp0 += 8
+			temp1 = 0
+			temp1 += 80
+			CheckTouchRect(temp0, 40, temp1, 70)
+			if CheckResult > -1
+				temp0 = stage.listPos
+				temp0 += 82
+				StopVoice(temp0)			
+				object.type = TypeName[Blank Object]
+			end if
+		end if
+	end if
+end event
+
+
+event ObjectDraw
+	if stage.actnum <= 5
+		DrawSpriteScreenXY(0, 44, 56)
+
+		// DrawString(first sprite, x position, y position, space width, character spacing, line drop, menu slot, menu entry)
+
+		temp0 = screen.ysize
+		temp0 -= 50
+		DrawString(1, 50, temp0, 4, 0, 10, MENU_1, Object.phoneLine)
+	end if
+end event
+
+event ObjectStartup
+	LoadSpriteSheet("FNATF/Objects.gif")
+	switch saved.language
+	case 0
+		LoadTextFile(MENU_1, "EN/Phoneguy.txt")
+		break
+	case 1
+		LoadTextFile(MENU_1, "PTBR/PhoneguyPTBR.txt")
+		break
+	case 2
+		LoadTextFile(MENU_1, "ES/PhoneguyES.txt")
+		break
+	case 3
+		LoadTextFile(MENU_1, "FR/PhoneguyFR.txt")
+		break
+	end switch
+	
+	// 0 mute
+	SpriteFrame(-32, -11, 64, 22, 720, 364)	
+
+	// STUPID FONT 
+	SpriteFrame(-7, -5, 5, 9, 1, 711)	// 1	- !
+	SpriteFrame(-7, -5, 5, 9, 7, 711)	// 2	- "
+	SpriteFrame(-7, -5, 7, 9, 7, 711)	// 3	- #
+	SpriteFrame(-7, -5, 6, 9, 21, 711)	// 4	- $
+	SpriteFrame(-7, -5, 7, 9, 28, 711)	// 5	- %
+	SpriteFrame(-7, -5, 7, 9, 36, 711)	// 6	- &
+	SpriteFrame(-7, -5, 4, 9, 44, 711)	// 7	- '
+	SpriteFrame(-7, -5, 4, 9, 49, 711)	// 8	- (
+	SpriteFrame(-7, -5, 4, 9, 54, 711)	// 9	- )
+	SpriteFrame(-7, -5, 7, 9, 55, 711)	// 10	- *
+	SpriteFrame(-7, -5, 7, 9, 67, 711)	// 11	- +
+	SpriteFrame(-7, -5, 4, 9, 75, 711)	// 12	- ,
+	SpriteFrame(-7, -5, 5, 9, 80, 711)	// 13	- -
+	SpriteFrame(-7, -5, 3, 9, 86, 711)	// 14	- .
+	SpriteFrame(-7, -5, 5, 9, 86, 711)	// 15	- /
+
+	//16 - 25		0 - 9
+	temp0 = 98
+	while temp0 < 168
+		SpriteFrame(-7, -4, 6, 8, temp0, 711)
+		temp0 += 7
+	loop	
+
+	SpriteFrame(-7, -4, 3, 8, 168, 711)	// 26	- :
+	SpriteFrame(-7, -5, 4, 9, 172, 711)	// 27	- ;
+	SpriteFrame(-7, -4, 5, 8, 177, 711)	// 28	- <
+	SpriteFrame(-7, -4, 6, 8, 183, 711)	// 29	- =			
+	SpriteFrame(-7, -4, 5, 8, 190, 711)	// 30	- >	
+	SpriteFrame(-7, -4, 6, 8, 196, 711)	// 31	- ?	
+	SpriteFrame(-7, -5, 10, 9, 196, 711)	// 32	- @
+
+	//33 - 40	A - H
+	temp0 = 1
+	while temp0 < 57
+		SpriteFrame(-7, -4, 6, 8, temp0, 722)
+		temp0 += 7
+	loop	
+
+	SpriteFrame(-7, -4, 5, 8, 57, 722)	// 41	- I
+	SpriteFrame(-7, -4, 4, 8, 63, 722)	// 42	- J
+	SpriteFrame(-7, -4, 6, 8, 68, 722)	// 43	- K
+	SpriteFrame(-7, -4, 6, 8, 75, 722)	// 44	- L
+	SpriteFrame(-7, -4, 7, 8, 82, 722)	// 45	- M
+	SpriteFrame(-7, -4, 6, 8, 90, 722)	// 46	- N
+	SpriteFrame(-7, -4, 7, 8, 97, 722)	// 47	- O
+	SpriteFrame(-7, -4, 6, 8, 105, 722)	// 48	- P
+	SpriteFrame(-7, -4, 7, 9, 112, 722)	// 49	- Q
+	SpriteFrame(-7, -4, 6, 8, 120, 722)	// 50	- R
+	SpriteFrame(-7, -4, 6, 8, 127, 722)	// 51	- S
+	SpriteFrame(-7, -4, 7, 8, 134, 722)	// 52	- T
+	SpriteFrame(-7, -4, 6, 8, 142, 722)	// 53	- U
+	SpriteFrame(-7, -4, 7, 8, 149, 722)	// 54	- V
+	SpriteFrame(-7, -4, 9, 8, 157, 722)	// 55	- W
+	SpriteFrame(-7, -4, 7, 8, 167, 722)	// 56	- X
+	SpriteFrame(-7, -4, 7, 8, 175, 722)	// 57	- Y
+	SpriteFrame(-7, -4, 6, 8, 183, 722)	// 58	- Z
+
+	SpriteFrame(-3, -5, 6, 9, 1, 733)	// 59	- [
+	SpriteFrame(-3, -5, 6, 9, 8, 733)	// 60	- \
+	SpriteFrame(-3, -5, 6, 9, 15, 733)	// 61	- ]
+	SpriteFrame(-4, -5, 7, 9, 22, 733)	// 62	- ^
+	SpriteFrame(-4, -5, 7, 9, 30, 733)	// 63	- _
+	SpriteFrame(-3, -5, 6, 9, 38, 733)	// 64	- `
+
+	SpriteFrame(-7, -4, 6, 8, 1, 743)	// 65	- a
+	SpriteFrame(-7, -4, 6, 8, 8, 743)	// 66	- b
+	SpriteFrame(-7, -4, 6, 8, 15, 743)	// 67	- c		67 67 67 67 67
+	SpriteFrame(-7, -4, 6, 8, 22, 743)	// 68	- d
+	SpriteFrame(-7, -4, 6, 8, 29, 743)	// 69	- e
+	SpriteFrame(-7, -4, 6, 8, 36, 743)	// 70	- f
+	SpriteFrame(-7, -4, 6, 9, 43, 743)	// 71	- g
+	SpriteFrame(-7, -4, 6, 8, 50, 743)	// 72	- h
+	SpriteFrame(-7, -4, 5, 8, 57, 743)	// 73	- i		
+	SpriteFrame(-7, -5, 6, 9, 63, 743)	// 74	- j
+	SpriteFrame(-7, -4, 6, 8, 70, 743)	// 75	- k
+	SpriteFrame(-7, -4, 5, 8, 77, 743)	// 76	- l
+	SpriteFrame(-7, -4, 9, 8, 83, 743)	// 77	- m		
+	SpriteFrame(-7, -4, 6, 8, 93, 743)	// 78	- n
+	SpriteFrame(-7, -4, 6, 8, 100, 743)	// 79	- o
+	SpriteFrame(-7, -4, 6, 9, 107, 743)	// 80	- p
+	SpriteFrame(-7, -5, 6, 9, 114, 743)	// 81	- q
+	SpriteFrame(-7, -4, 6, 8, 121, 743)	// 82	- r
+	SpriteFrame(-7, -4, 5, 8, 128, 743)	// 83	- s
+	SpriteFrame(-7, -4, 4, 8, 134, 743)	// 84	- t
+
+	SpriteFrame(-7, -4, 6, 8, 139, 743)	// 85	- u
+	SpriteFrame(-7, -4, 6, 8, 146, 743)	// 86	- v
+	SpriteFrame(-7, -4, 7, 8, 153, 743)	// 87	- w
+	SpriteFrame(-7, -4, 7, 8, 161, 743)	// 88	- x
+	SpriteFrame(-7, -4, 6, 9, 169, 743)	// 89	- y
+	SpriteFrame(-7, -4, 6, 8, 176, 743)	// 90	- z
+
+	SpriteFrame(-7, -5, 6, 9, 1, 753)	// 91	- {
+	SpriteFrame(-7, -5, 6, 9, 8, 753)	// 92	- |
+	SpriteFrame(-7, -5, 6, 9, 15, 753)	// 93	- }
+	SpriteFrame(-7, -5, 6, 9, 23, 753)	// 94	- ~
+
+	// Place the HUD object into reserved object slot 4 and initialise its values
+	Object[20].Type = TypeName[Phone Guy]
+	
+	// The object should always be run, regardless if it's within camera bounds or not
+	Object[20].Priority = PRIORITY_ACTIVE
+	
+	// Make the HUD draw ontop of all other sprites, too
+	Object[20].DrawOrder = 4
+
+	switch stage.actnum
+		case 1
+			Object[20].phoneLine = 0
+		break
+		case 2
+			Object[20].phoneLine = 54
+		break
+		case 3
+			Object[20].phoneLine = 70
+		break
+		case 4
+			Object[20].phoneLine = 85
+		break
+		case 5
+			Object[20].phoneLine = 96
+		break
+	end switch
+end event
+
+
+// ========================
+// Editor events
+// ========================
+
+event RSDKDraw
+	DrawSprite(0)
+end event
+
+
+event RSDKLoad
+	LoadSpriteSheet("3D_Test/Objects.gif")
+	SpriteFrame(0, 0, 24, 16, 206, 58)
+
+	SetVariableAlias(ALIAS_VAR_PROPVAL, "unused")
+end event

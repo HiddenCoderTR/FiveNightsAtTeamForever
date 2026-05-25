@@ -1,0 +1,267 @@
+// ----------------------------------
+// RSDK Project: Five Nights At Team Forever
+// Script Description: Cam Drawer
+// Script Author: Casteor573
+// ----------------------------------
+
+
+// Priority
+private alias Object.Value0 : Object.Timer     //	you know this one  
+
+private alias Object[6].Value1 : Object.CameraState
+private alias Object[6].State : Camera.State 
+
+// Animatronics
+private alias object[10].state : Serpent.State
+private alias object[11].state : Soink.State
+private alias object[12].state : Shrine.State
+private alias object[13].state : TimelyFellow.State
+
+private alias Object[13].value12 : Object.CurtainState
+
+private alias 1 : PRIORITY_ACTIVE
+
+private alias 2  : CAMERA_MAIN
+
+private alias 0 : CAM_SHOWSTAGE_0
+private alias 1 : CAM_DININGHALL_1
+private alias 2 : CAM_BACKSTAGE_2
+private alias 3 : CAM_PIRATESCOVE_3
+private alias 4 : CAM_WESTHALL_4
+private alias 5 : CAM_CLOSET_5
+private alias 6 : CAM_WHALLCORNER_6
+private alias 7 : CAM_EASTHALL_7
+private alias 8 : CAM_EHALLCORNER_8
+private alias 9 : CAM_KITCHEN_9
+private alias 10 : CAM_BATHROOMS_10
+
+event ObjectDraw
+	if camera.state == CAMERA_MAIN
+		DrawRect(0, 0, Screen.XSize, Screen.YSize, 0, 0, 0, 255)
+		DrawSpriteScreenXY(Object.CameraState, screen.xcenter, screen.ycenter)
+
+
+		if object.camerastate == Shrine.State
+			temp0 = screen.xcenter
+			temp1 = screen.ycenter
+			switch Shrine.State
+				case CAM_SHOWSTAGE_0
+					temp0 += 128
+					temp1 -= 8
+					DrawSpriteScreenXY(23, temp0, temp1)
+				break
+				case CAM_DININGHALL_1
+					temp0 -= 125
+					temp1 -= 3
+					DrawSpriteScreenXY(24, temp0, temp1)
+				break
+				case CAM_BATHROOMS_10
+					temp0 += 8
+					temp1 -= 28
+					DrawSpriteScreenXY(25, temp0, temp1)
+				break		
+				//nothing happens in the kitchen
+				case CAM_EASTHALL_7
+					temp0 -= 72
+					temp1 += 64
+					DrawSpriteScreenXY(26, temp0, temp1)
+				break					
+				case CAM_EHALLCORNER_8
+					temp0 -= 64
+					temp1 += 32
+					DrawSpriteScreenXY(27, temp0, temp1)
+				break
+			end switch
+		end if		
+
+		if object.camerastate == Serpent.State
+			temp0 = screen.xcenter
+			temp1 = screen.ycenter
+			switch Serpent.State
+				case CAM_SHOWSTAGE_0
+					temp0 -= 0
+					DrawSpriteScreenXY(12, temp0, temp1)
+				break
+				case CAM_DININGHALL_1
+					temp0 += 42
+					temp1 -= 48
+					DrawSpriteScreenXY(13, temp0, temp1)
+				break
+				case CAM_BATHROOMS_10
+					temp0 -= 70
+					temp1 -= 28
+					DrawSpriteScreenXY(14, temp0, temp1)
+				break		
+				// while the serpent goes to the kitchen, they dont draw anyhting cuzzz yknow
+				case CAM_EASTHALL_7
+					temp0 += 30
+					temp1 -= 28
+					DrawSpriteScreenXY(15, temp0, temp1)
+				break					
+				case CAM_EHALLCORNER_8
+					temp0 += 42
+					temp1 += 18
+					DrawSpriteScreenXY(16, temp0, temp1)
+				break	
+			end switch
+		end if
+
+		if object.camerastate == Soink.State
+			temp0 = screen.xcenter
+			temp1 = screen.ycenter
+			switch Soink.State
+				case CAM_SHOWSTAGE_0
+					temp0 -= 128
+					temp1 += 32
+					DrawSpriteScreenXY(17, temp0, temp1)
+				break
+				case CAM_DININGHALL_1
+					temp0 += 42
+					temp1 += 52
+					DrawSpriteScreenXY(18, temp0, temp1)
+				break
+				case CAM_BACKSTAGE_2
+					temp0 += 22
+					temp1 -= 28
+					DrawSpriteScreenXY(19, temp0, temp1)
+				break		
+				case CAM_WESTHALL_4
+					temp0 -= 40
+					temp1 -= 28
+					DrawSpriteScreenXY(20, temp0, temp1)
+				break					
+				case CAM_CLOSET_5
+					temp0 -= 48
+					temp1 -= 8
+					DrawSpriteScreenXY(21, temp0, temp1)
+				break
+				case CAM_WHALLCORNER_6
+					temp0 += 42
+					temp1 += 18
+					DrawSpriteScreenXY(22, temp0, temp1)
+				break						
+			end switch
+		end if
+
+		if object.camerastate == TimelyFellow.State
+			temp0 = screen.xcenter
+			temp1 = screen.ycenter	
+
+			switch TimelyFellow.State
+				case CAM_PIRATESCOVE_3
+					switch Object.CurtainState
+						case 0
+							temp0 -= 0
+							temp1 -= 12
+							DrawSpriteScreenXY(29, temp0, temp1)
+						break
+						case 1
+							temp0 -= 0
+							temp1 -= 12
+							DrawSpriteScreenXY(30, temp0, temp1)
+						break	
+						case 2
+							temp0 -= 0
+							temp1 -= 12
+							DrawSpriteScreenXY(31, temp0, temp1)
+
+							temp0 += 16
+							temp1 += 32
+							DrawSpriteScreenXY(32, temp0, temp1)
+						break		
+						case 3
+							temp0 -= 0
+							temp1 -= 12
+							DrawSpriteScreenXY(31, temp0, temp1)
+
+							temp0 += 16
+							temp1 += 52
+							DrawSpriteScreenXY(33, temp0, temp1)
+						break			
+						default
+							temp0 -= 0
+							temp1 -= 12
+							DrawSpriteScreenXY(31, temp0, temp1)
+						break																			
+					end switch
+				break
+			end switch
+
+		end if
+	end if
+end event
+
+event ObjectStartup
+	
+	LoadSpriteSheet("FNATF/CamScreens.gif")
+	
+	// Place the HUD object into reserved object slot 4 and initialise its values
+	Object[5].Type = TypeName[Cam Drawer]
+	
+	// The object should always be run, regardless if it's within camera bounds or not
+	Object[5].Priority = PRIORITY_ACTIVE
+	
+	// Make the HUD draw ontop of all other sprites, too
+	Object[5].DrawOrder = 3
+
+	// 0 - 11		the first 12 camers
+	temp1 = 1
+	while temp1 < 724
+		temp0 = 1
+		while temp0 < 1709
+			SpriteFrame(-213, -120, 426, 240, temp0, temp1)
+			temp0 += 427
+		loop
+		temp1 += 241
+	loop		
+
+	//serpent 
+	
+	SpriteFrame(-63, -84, 125, 168, 1, 724)	//12
+	SpriteFrame(-16, -37, 32, 74, 127, 724)	//13
+	SpriteFrame(-24, -44, 48, 87, 127, 799)	//14	
+	SpriteFrame(-40, -42, 80, 84, 1, 893)	//15
+	SpriteFrame(-91, -101, 181, 202, 176, 724)	//16
+
+	//soink 
+	
+	SpriteFrame(-50, -74, 99, 147, 358, 724)	//17
+	SpriteFrame(-65, -63, 130, 126, 458, 724)	//18
+	SpriteFrame(-36, -40, 71, 80, 589, 724)	//19	
+	SpriteFrame(-18, -27, 35, 57, 661, 724)	//20
+	SpriteFrame(-45, -49, 90, 98, 697, 724)	//21
+	SpriteFrame(-68, -79, 135, 158, 788, 724)	//22
+
+	//shrine
+	SpriteFrame(-101, -82, 201, 163, 924, 724)	//23
+	SpriteFrame(-88, -58, 175, 117, 1126, 724)	//24
+	SpriteFrame(-26, -52, 52, 104, 1302, 724)	//25
+	SpriteFrame(-142, -61, 283, 121, 1355, 724)	//26
+	SpriteFrame(-130, -92, 259, 184, 1126, 847)	//27
+	SpriteFrame(-68, -79, 135, 158, 788, 724)	//28	not used
+
+	//timely
+	SpriteFrame(-89, -77, 178, 153, 1709, 1)	//29	closed
+	SpriteFrame(-89, -77, 178, 153, 1709, 155)	//30 peek
+	SpriteFrame(-89, -77, 178, 153, 1709, 309)	//31 open	
+
+	SpriteFrame(-52, -85, 103, 170, 1709, 463)	//32 standing 1
+	SpriteFrame(-66, -80, 131, 160, 1813, 463)	//33 standing 2
+end event
+
+
+// ========================
+// Editor events
+// ========================
+
+event RSDKDraw
+	DrawSprite(0)
+end event
+
+
+event RSDKLoad
+	LoadSpriteSheet("3D_Test/Objects.gif")
+	SpriteFrame(0, 0, 24, 16, 206, 58)
+
+	SetVariableAlias(ALIAS_VAR_PROPVAL, "unused")
+end event

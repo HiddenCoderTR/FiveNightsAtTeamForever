@@ -1,0 +1,823 @@
+// ----------------------------------
+// RSDK Project: Five Nights At Team Forever
+// Script Description: Camera
+// Script Author: Casteor573
+// ----------------------------------
+// Priority
+private alias 1 : PRIORITY_ACTIVE
+
+private alias 113 : LEFTLIMIT
+
+public alias 99 : SLOT_TITLECARD
+
+private alias Object.Value0 : Object.Timer
+private alias Object.Value1 : Object.RightLimit
+private alias Object.Value2 : Object.ScrollPos
+
+private alias Object.Value3 : Object.LeftLight
+private alias Object.Value4 : Object.RightLight
+private alias Object.Value5 : Object.LeftDoorClosed
+private alias Object.Value6 : Object.RightDoorClosed
+
+private alias Object.Value7 : Object.LDoorSlide
+private alias Object.Value8 : Object.RDoorSlide
+
+//mainly for the lights
+private alias Object.Value9  : Object.SoundTimer
+private alias Object.Value10 : Object.TouchTimer
+private alias Object.Value11 : Object.RightButtonPos
+
+private alias Object.Value12 : Object.FanTimer
+private alias Object.Value13 : Object.FanFrame
+private alias Object.Value14 : Object.FanSound
+
+private alias Object.Value15 : Object.PowerTimer
+private alias Object.Value16 : Object.PowerDrainRate
+private alias Object.Value17 : Object.SoundTrigger
+//HUD
+private alias Object[3].Value4 : Object.UsageBar
+
+public alias saveRAM[202] : saved.reduceMotion
+public alias saveRAM[205] : saved.lights
+public alias saveRAM[206] : saved.checkpoint
+public alias saveRAM[207] : saved.sonic
+public alias saveRAM[208] : saved.tails
+public alias saveRAM[209] : saved.dog
+public alias saveRAM[210] : saved.radar
+public alias saveRAM[211] : saved.mark
+public alias saveRAM[212] : saved.MirrorMode
+
+//animatronics
+private alias object[10].state : Serpent.State
+private alias object[11].state : Soink.State
+private alias object[12].state : Shrine.State
+private alias object[13].state : TimelyFellow.State
+
+private alias Object[10].Value4 : Object.SerpentAI  
+private alias Object[11].Value4 : Object.SoinkAI  
+private alias Object[12].Value4 : Object.ShrineAI  
+private alias Object[13].Value4 : Object.TimelyFellowAI  
+
+public alias saveRAM[6010] : custom.serpent
+public alias saveRAM[6011] : custom.soink
+public alias saveRAM[6012] : custom.shrine
+public alias saveRAM[6013] : custom.timely
+
+private alias 15 : SOINK_OFFICEDOOR
+private alias 16 : SOINK_WAITTOSCARE
+
+private alias 15 : SHRINE_OFFICEDOOR
+private alias 16 : SHRINE_WAITTOSCARE
+
+reserve function Office_Controls
+reserve function Office_MobileControls
+
+reserve function Office_LeftSide
+reserve function Office_RightSide
+
+reserve function Night_AI
+
+public value PlayerJumpscared = 0;
+public value UseMouse = 0;
+public value ForcePull = 0;
+
+public value OfficePower = 0;
+public value NightWon = 0;
+public value CameraEnabled = 0;
+
+//basically animatronics can lock the doors if you take too long to stop them lol
+public value LDoorLocked= 0;
+public value RDoorLocked = 0;
+
+public value LWindowScare = 0;
+public value RWindowScare = 0;
+
+public table OfficeFlash
+	32, 64, 96, 64
+end table
+
+function Night_AI
+	switch stage.actnum
+	case 1
+		if stage.minutes < 2
+			Object.SerpentAI  = -1
+			Object.SoinkAI = -1
+			Object.ShrineAI  = -1
+			Object.TimelyFellowAI = -1
+		else
+			Object.SerpentAI  = 0
+			Object.SoinkAI = 3
+			Object.ShrineAI  = 3
+			Object.TimelyFellowAI = 0
+		end if
+	break
+	case 2
+		Object.SerpentAI  = 0
+		Object.SoinkAI = 5
+		Object.ShrineAI  = 4
+		Object.TimelyFellowAI = 3
+	break
+	case 3
+		if stage.minutes < 1
+			Object.SerpentAI  = 1
+		else
+			Object.SerpentAI  = 2
+		end if
+		Object.SoinkAI = 7
+		Object.ShrineAI  = 6
+		Object.TimelyFellowAI = 5				
+	break
+	case 4
+		Object.SerpentAI  = 2
+		Object.SoinkAI = 9
+		Object.ShrineAI  = 9
+		Object.TimelyFellowAI = 7
+	break	
+	case 5
+		Object.SerpentAI  = 4
+		Object.SoinkAI = 10
+		Object.ShrineAI  = 10
+		Object.TimelyFellowAI = 9				
+	break		
+	case 6
+		Object.SerpentAI  = 6
+		Object.SoinkAI = 10
+		Object.ShrineAI  = 14
+		Object.TimelyFellowAI = 16	
+	break		
+	case 7
+		Object.SerpentAI  = custom.serpent
+		Object.SoinkAI = custom.soink
+		Object.ShrineAI  = custom.shrine
+		Object.TimelyFellowAI = custom.timely	
+	break		
+	end switch	
+
+	if saved.dog == 1
+		if stage.actnum <= 6
+			temp0 = 2
+			Object.SerpentAI  *= temp0
+			Object.SoinkAI *= temp0
+			Object.ShrineAI  *= temp0
+			Object.TimelyFellowAI *= temp0		
+		end if
+	end if
+end function
+
+// doors and lights functionality
+function Office_Controls	
+	//if they arent dead and havent won yet
+	CheckEqual(PlayerJumpscared, 0)
+	temp0 = checkresult
+	CheckEqual(NightWon, 0)
+	temp0 &= checkresult
+	if temp0 == 1
+		if inputDown.left == 1
+			if Object.ScrollPos < LEFTLIMIT
+					Object.ScrollPos += 10
+			end if	
+		end if
+
+				Object.RightLimit = 537
+		Object.RightLimit -= screen.xsize
+		not(Object.RightLimit)
+
+		if inputDown.right == 1
+			if Object.ScrollPos > Object.RightLimit
+				Object.ScrollPos -= 10
+			end if
+		end if
+
+		// facing the left
+		if Object.ScrollPos >= 15
+			if inputPress.buttonA == 1
+				//if the door isnt locked
+				if LDoorLocked == 0
+					Object.LeftDoorClosed ^= 1
+					PlaySfx(SfxName[Door], 0)
+				else
+					PlaySfx(SfxName[Error], 0)	
+				end if	
+
+
+				if Object.LeftDoorClosed == 1
+					Object.UsageBar += 1
+				else
+					Object.UsageBar -= 1
+				end if
+			
+			end if
+
+			if saved.lights == 0
+				if inputpress.buttonC == 1
+					Object.LeftLight ^= 1
+					if LWindowScare == 1
+						PlaySfx(SfxName[DoorScare], 0)
+						LWindowScare = 0
+					end if
+					if Object.LeftLight == 1
+						Object.UsageBar += 1
+					else
+						Object.UsageBar -= 1
+					end if
+				end if
+
+				if Object.LeftLight == 1
+					if Object.RightLight == 1
+						Object.RightLight = 0
+						Object.UsageBar -= 1
+					end if
+				end if	
+				if Object.RightLight == 1
+					if Object.LeftLight == 1
+						Object.LeftLight = 0
+						Object.UsageBar -= 1
+					end if
+				end if	
+			end if
+	
+
+		// facing the right	
+		else
+			if inputpress.buttonA == 1
+				//if the door isnt locked
+				if RDoorLocked == 0
+					Object.RightDoorClosed ^= 1
+					PlaySfx(SfxName[Door], 0)
+				else
+					PlaySfx(SfxName[Error], 0)	
+				end if	
+
+
+				if Object.RightDoorClosed == 1
+					Object.UsageBar += 1
+				else
+					Object.UsageBar -= 1
+				end if				
+			end if
+
+			if saved.lights == 0
+				if inputpress.buttonC == 1
+					if RWindowScare == 1
+						PlaySfx(SfxName[DoorScare], 0)
+						RWindowScare = 0
+					end if
+					Object.RightLight ^= 1
+
+					if Object.RightLight == 1
+						Object.UsageBar += 1
+					else
+						Object.UsageBar -= 1
+					end if					
+				end if		
+
+				if Object.RightLight == 1
+					if Object.LeftLight == 1
+						Object.LeftLight = 0
+						Object.UsageBar -= 1
+					end if
+				end if	
+				if Object.LeftLight == 1
+					if Object.RightLight == 1
+						Object.RightLight = 0
+						Object.UsageBar -= 1
+					end if
+				end if
+			end if			
+
+		end if
+
+		CheckEqual(Object.LeftLight, 1)
+		temp0 = checkresult
+		CheckEqual(Object.RightLight, 1)
+		temp0 |= checkresult		
+		if temp0 == 1
+			Object.SoundTimer++
+			if Object.SoundTimer >= 0
+				PlaySfx(SfxName[Hum], 0)
+				Object.SoundTimer = -12
+			end if	
+		else
+			StopSfx(SfxName[Hum])
+			Object.SoundTimer = 0
+		end if
+
+
+		if inputPress.buttonZ == 1
+			PlaySfx(SfxName[Trigger], 0)
+		end if
+	end if
+end function
+
+function Office_MobileControls
+	//Not using the camera?
+	//Activate base office controls
+	CheckEqual(CameraEnabled, 0)
+	temp6 = checkResult
+	CheckEqual(PlayerJumpscared, 0)
+	temp6 &= checkResult	
+	CheckEqual(NightWon, 0)
+	temp6 &= checkResult
+	CheckEqual(useMouse, 1)
+	temp6 &= checkResult
+	if temp6 == 1
+
+		//para android	touch rects
+		CheckTouchRect(0, 0, screen.xsize, screen.ysize)
+		if checkResult == -1
+			Object.TouchTimer = false
+		end if
+		if Object.TouchTimer == 0
+			//LEFT BUTTONS
+			temp0 = Object.ScrollPos
+			temp0 -= 28
+			temp1 = Object.ScrollPos
+			temp1 += 24
+			CheckTouchRect(temp0, 64, temp1, 110)
+			if CheckResult > -1
+				Object.TouchTimer = 1
+				inputpress.buttonA = 1
+			end if
+			CheckTouchRect(temp0, 110, temp1, 160)
+			if CheckResult > -1
+				Object.TouchTimer = 1
+				if saved.lights == 0
+					inputpress.buttonC = 1
+				else
+					PlaySfx(SfxName[Error], 0)
+				end if
+			end if
+
+			//right
+			temp0 = Object.ScrollPos
+			temp0 += screen.xsize
+			temp0 += 2
+			temp1 = Object.ScrollPos
+			temp1 += screen.xsize
+			temp1 += 48
+			CheckTouchRect(temp0, 64, temp1, 110)
+			if CheckResult > -1
+				Object.TouchTimer = 1
+				inputpress.buttonA = 1
+			end if
+			CheckTouchRect(temp0, 110, temp1, 160)
+			if CheckResult > -1
+				Object.TouchTimer = 1
+				if saved.lights == 0
+					inputpress.buttonC = 1
+				else
+					PlaySfx(SfxName[Error], 0)
+				end if
+			end if
+
+			//secret
+			temp0 = Object.ScrollPos
+			temp0 += screen.xsize
+			temp0 -= 203
+			temp1 = Object.ScrollPos
+			temp1 += screen.xsize
+			temp1 -= 169
+			CheckTouchRect(temp0, 51, temp1, 82)
+			if CheckResult > -1
+				Object.TouchTimer = 1
+				PlaySfx(SfxName[Sponge], 0)
+			end if
+			
+			temp0 = Object.ScrollPos
+			temp0 += screen.xsize
+			temp0 -= 153
+			temp1 = Object.ScrollPos
+			temp1 += screen.xsize
+			temp1 -= 125
+			CheckTouchRect(temp0, 74, temp1, 110)
+			if CheckResult > -1
+				Object.TouchTimer = 1
+				PlaySfx(SfxName[Trigger], 0)
+			end if
+		end if
+	end if
+end function
+
+function Office_LeftSide
+	if object.LeftLight == 1
+		temp0 = Object.ScrollPos
+		temp0 += 77
+		DrawSpriteScreenXY(14, temp0, screen.ycenter)	//door
+	end if
+
+	if object.LeftLight == 1
+		CheckEqual(Shrine.State, SHRINE_OFFICEDOOR)
+		temp1 = checkresult
+		CheckEqual(Shrine.State, SHRINE_WAITTOSCARE)
+		temp1 |= checkresult		
+		if temp1 == 1
+			temp0 = Object.ScrollPos
+			temp0 += 84
+			DrawSpriteScreenXY(19, temp0, screen.ycenter)	//door	
+		end if
+	end if
+
+	if Object.LeftDoorClosed == 1	//open
+		// go down
+		if Object.LDoorSlide < 295
+			Object.LDoorSlide += 18
+		else
+			Object.LDoorSlide = 295
+		end if
+	else
+		// go up
+		if Object.LDoorSlide > 0
+			Object.LDoorSlide -= 18
+		else
+			Object.LDoorSlide = 0
+		end if	
+	end if	
+	temp0 = Object.ScrollPos
+	temp0 += 66
+	DrawSpriteScreenXY(13, temp0, Object.LDoorSlide)	//door
+end function
+
+function Office_RightSide
+	if object.RightLight == 1
+		temp0 = Object.ScrollPos
+		temp0 += 373
+		DrawSpriteScreenXY(15, temp0, screen.ycenter)	//door
+	end if
+
+	if object.RightLight == 1
+		CheckEqual(Soink.State, SOINK_OFFICEDOOR)
+		temp1 = checkresult
+		CheckEqual(Soink.State, SOINK_WAITTOSCARE)
+		temp1 |= checkresult		
+		if temp1 == 1
+			temp0 = Object.ScrollPos
+			temp0 += 395
+			DrawSpriteScreenXY(18, temp0, screen.ycenter)	//door	
+		end if
+	end if
+
+
+	if Object.RightDoorClosed == 1	//open
+		// go down
+		if Object.RDoorSlide < 295
+			Object.RDoorSlide += 18
+		else
+			Object.RDoorSlide = 295
+		end if
+	else
+		// go up
+		if Object.RDoorSlide > 0
+			Object.RDoorSlide -= 18
+		else
+			Object.RDoorSlide = 0
+		end if	
+		
+	end if	
+	temp0 = Object.ScrollPos
+	temp0 += 384
+	object.direction = 1
+	DrawSpriteScreenFX(13, FX_FLIP, temp0, Object.RDoorSlide)	//door
+end function
+
+event ObjectMain
+
+	CallFunction(Night_AI)
+
+	// if theres no title card object
+	if Object[SLOT_TITLECARD].Type == TypeName[Blank Object]
+		// if you arent dead, then you can pause
+		// no rage quitting sorry
+		if PlayerJumpscared == 0
+			if OfficePower > 0
+				if Object[9].Type == TypeName[Blank Object]
+
+					if useMouse == 1
+						temp0 = 0
+						temp0 += screen.xsize
+						temp0 -= 132
+						temp1 = 0
+						temp1 += screen.xsize
+						temp1 -= 87
+						CheckTouchRect(temp0, 0, temp1, 36)
+						if CheckResult > -1
+							inputpress.start = 1
+						end if
+					end if
+
+					if inputpress.Start == true
+						// Disable start for this frame, this'll help with "double-pausing" cases
+						inputpress.Start = false
+					
+						// Give different pause menus depending on if the player was brought here from the Dev Menu
+						// (...but why?)
+				
+						// Pause the stage, this'll pause all the stage's objects too
+						Stage.State = STAGE_FROZEN
+						
+						// and pause the stage's music, as well
+						PauseMusic()
+						// Create the Pause Menu and set it up as needed
+						Object[9].Type = TypeName[Pause Menu]
+						Object[9].State = 0
+						Object[9].DrawOrder = 6
+						Object[9].Priority = 2
+					end if
+				end if
+			end if
+		end if	
+
+		// controls being door controls, and touch controls
+		if OfficePower > 0
+			if CameraEnabled == 0
+				CallFunction(Office_MobileControls)
+				CallFunction(Office_Controls)
+			end if
+
+			//fan animation
+			Object.FanTimer++
+			if saved.reduceMotion == 0
+				if Object.FanTimer == 3
+					Object.FanFrame++
+					Object.FanTimer = 0
+				end if
+			else
+				if Object.FanTimer == 9
+					Object.FanFrame++
+					Object.FanTimer = 0
+				end if
+			end if
+			if Object.FanFrame > 17
+				Object.FanFrame = 16
+			end if
+			Object.FanSound++
+			if Object.FanSound >= 0
+				PlaySfx(SfxName[Fan], 0)
+				Object.FanSound = -572
+			end if
+
+			//power stuff
+
+			Object.PowerTimer++
+			
+			if saved.tails == 1
+				Object.PowerDrainRate = 450
+			else
+				Object.PowerDrainRate = 300
+			end if
+
+			temp0 = Object.UsageBar
+			temp0 *= 50
+			Object.PowerDrainRate -= temp0
+
+			if Object.PowerTimer >= Object.PowerDrainRate
+				OfficePower--
+				Object.PowerTimer = 0
+			end if
+		else
+			StopMusic()
+			if Object.SoundTrigger == 0
+				PlaySfx(SfxName[Power Out], 0)
+				Object.SoundTrigger = 1
+			end if
+			StopSfx(SfxName[Hum])
+			StopSfx(SfxName[Fan])
+			Object.LeftDoorClosed = 0
+			Object.RightDoorClosed = 0
+			Object.RightLight = 0
+			Object.LeftLight = 0
+		end if
+
+		//cant move when the camera is up
+		CheckEqual(CameraEnabled, 0)
+		temp0 = checkresult
+		CheckEqual(PlayerJumpscared, 0)
+		temp0 &= checkresult
+		if temp0 == 1
+
+			if UseMouse == 1
+				// scroll left
+				if Object.ScrollPos < LEFTLIMIT
+					if touchscreen[0].xpos < 170
+						Object.ScrollPos += 3
+					end if
+				end if	
+				// fast if on the other side
+				if Object.ScrollPos < LEFTLIMIT
+					if touchscreen[0].xpos < 120
+						Object.ScrollPos += 5
+					end if
+				end if
+				
+				Object.RightLimit = 537
+				Object.RightLimit -= screen.xsize
+				not(Object.RightLimit)
+				
+			
+				temp0 = screen.xcenter
+				temp0 += 50
+				if Object.ScrollPos > Object.RightLimit
+					if touchscreen[0].xpos > temp0
+						Object.ScrollPos -= 3
+					end if
+				end if
+				temp0 = screen.xcenter
+				temp0 += 90
+				if Object.ScrollPos > Object.RightLimit
+					if touchscreen[0].xpos > temp0
+						Object.ScrollPos -= 5
+					end if
+				end if
+			end if	
+		end if
+	end if
+
+	// if inputPress.buttonY == true
+	// 	OfficePower = 0
+	// end if
+end event
+
+event ObjectDraw
+	//Draw Order
+	// filler void to fill the screens
+
+	// light and door stuff
+		// lights should be under doors
+
+	//office
+
+	//buttons
+
+	//misc
+
+
+	//filler void
+	DrawRect(0, 0, Screen.XSize, Screen.YSize, 0, 0, 0, 255)
+
+
+	// mainly the doors and stuff
+	CallFunction(Office_LeftSide)
+	CallFunction(Office_RightSide)
+	
+	// main office
+	DrawSpriteScreenXY(10, Object.ScrollPos, 56)
+
+
+	temp0 = Object.ScrollPos
+	temp0 += 210
+	DrawSpriteScreenXY(Object.FanFrame, temp0, 125)
+
+	//sonic plush
+	if saved.sonic == 1
+		temp0 = Object.ScrollPos
+		temp0 += 230
+		DrawSpriteScreenXY(21, temp0, 131)
+	end if
+
+	if saved.tails == 1
+		temp0 = Object.ScrollPos
+		temp0 += 140
+		DrawSpriteScreenXY(22, temp0, 131)
+	end if
+
+	if saveRAM[6002] == 1
+		temp0 = Object.ScrollPos
+		temp0 += 150
+		DrawSpriteScreenXY(23, temp0, 81)
+	end if
+
+	if saveRAM[6003] == 1
+		temp0 = Object.ScrollPos
+		temp0 += 170
+		DrawSpriteScreenXY(24, temp0, 81)	
+	end if
+
+	if saved.dog == true
+		temp0 = Object.ScrollPos
+		temp0 += 190
+		DrawSpriteScreenXY(25, temp0, 90)
+	end if
+
+
+	// door actiavted sprite
+	if Object.LeftDoorClosed == 1
+		DrawSpriteScreenXY(11, Object.ScrollPos, 87)		
+	end if
+
+	if Object.LeftLight == 1
+		DrawSpriteScreenXY(12, Object.ScrollPos, 135)		
+	end if	
+	
+	if Object.RightDoorClosed == 1
+		object.direction = 1
+		temp0 = Object.ScrollPos
+		temp0 += 450
+		DrawSpriteScreenFX(11, FX_FLIP, temp0, 87)		
+	end if
+
+	if Object.RightLight == 1
+		object.direction = 1
+		temp0 = Object.ScrollPos
+		temp0 += 450
+		DrawSpriteScreenFX(12, FX_FLIP, temp0, 135)		
+	end if
+end event
+
+
+event ObjectStartup
+	
+	LoadSpriteSheet("FNATF/Objects.gif")
+	
+	// Place the HUD object into reserved object slot 4 and initialise its values
+	Object[4].Type = TypeName[Office]
+	
+	// The object should always be run, regardless if it's within camera bounds or not
+	Object[4].Priority = PRIORITY_ACTIVE
+	
+	// Make the HUD draw ontop of all other sprites, too
+	Object[4].DrawOrder = 3
+	// starting pos, should be centered
+	Object[4].ScrollPos = -15
+
+	Object[4].FanFrame = 16
+
+	OfficePower = 100
+	RWindowScare = 0
+	LWindowScare = 0
+	PlayerJumpscared = 0
+	ForcePull = 0
+	UseMouse = saveRAM[211]
+	NightWon = 0
+	CameraEnabled = 0
+
+	LDoorLocked = 0
+	RDoorLocked = 0
+
+	LWindowScare = 0 
+	RWindowScare = 0
+	
+	// 0-9 - Numbers 0-9
+	
+	SpriteFrame(0, 0, 8, 13, 1, 1)
+	SpriteFrame(0, 0, 8, 13, 10, 1)
+	SpriteFrame(0, 0, 8, 13, 19, 1)
+	SpriteFrame(0, 0, 8, 13, 28, 1)
+	SpriteFrame(0, 0, 8, 13, 37, 1)
+	SpriteFrame(0, 0, 8, 13, 1, 15)
+	SpriteFrame(0, 0, 8, 13, 10, 15)
+	SpriteFrame(0, 0, 8, 13, 19, 15)
+	SpriteFrame(0, 0, 8, 13, 28, 15)
+	SpriteFrame(0, 0, 8, 13, 37, 15)
+
+	SpriteFrame(-115, -56, 680, 240, 1, 29) // 10 - office
+
+	// side stuff
+	//side buttons activated		11 - 12
+	SpriteFrame(-19, -24, 31, 47, 682, 29) // Door
+	SpriteFrame(-19, -24, 31, 47, 682, 77) // Light
+
+	// door
+	SpriteFrame(-36, -302, 71, 295, 1, 270)	//13
+
+	//left side light
+	SpriteFrame(-60, -120, 120, 240, 73, 270)	//14	
+	//right side light
+	SpriteFrame(-60, -120, 120, 240, 194, 270)	//15	
+
+	//fan
+	SpriteFrame(-20, -24, 40, 48, 682, 125)	//16	
+	SpriteFrame(-20, -24, 40, 48, 723, 125)	//17
+
+	//soink at window
+	SpriteFrame(-27, -65, 53, 130, 557, 270)	//18
+
+	//shrine at window
+	SpriteFrame(-53, -120, 105, 240, 611, 270)	//19	
+
+	//serpent death
+	SpriteFrame(-25, -54, 49, 107, 557, 401)	//20	
+
+	//plushies
+	SpriteFrame(-15, -15, 30, 29, 720, 387)	//21		sonic
+	SpriteFrame(-14, -14, 28, 28, 751, 388)	//22		tails	
+	SpriteFrame(-15, -15, 30, 28, 780, 388)	//23		knux
+	SpriteFrame(-15, -15, 30, 29, 811, 387)	//24		amy			
+	
+	SpriteFrame(-13, -15, 26, 29, 781, 417)	//25		dog				
+end event
+
+
+// ========================
+// Editor events
+// ========================
+
+event RSDKDraw
+	DrawSprite(0)
+end event
+
+
+event RSDKLoad
+	LoadSpriteSheet("3D_Test/Objects.gif")
+	SpriteFrame(0, 0, 24, 16, 206, 58)
+
+	SetVariableAlias(ALIAS_VAR_PROPVAL, "unused")
+end event

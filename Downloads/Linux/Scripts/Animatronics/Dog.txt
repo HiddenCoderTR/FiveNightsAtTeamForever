@@ -1,0 +1,102 @@
+// ----------------------------------
+// RSDK Project: Five Nights At Team Forever
+// Script Description: Dog
+// Script Author: Casteor573
+// ----------------------------------
+
+
+// Priority
+private alias Object.Value0 : Object.Timer    
+private alias Object.Value1 : Object.DogTimer     
+private alias Object.Value2 : Object.DogRand
+private alias Object.Value3 : Object.FunEvent
+private alias Object.Value4 : Object.PhoneShake
+private alias Object.Value5 : Object.PhoneTimer
+
+private alias object.state  : Dog.State
+
+event ObjectMain
+if Object[SLOT_TITLECARD].Type == TypeName[Blank Object]
+	switch Dog.State
+		case 0
+			if OfficePower > 0
+				rand(Object.DogRand, 100000)
+				rand(Object.FunEvent, 100000)
+				if Object.FunEvent == Object.DogRand
+					PlayMusic(6)
+					object.state++
+				end if
+			end if
+		break
+		case 1
+			Object.DogTimer++
+			temp0 = 2000
+			rand(temp1, 500)
+			temp0 += temp1
+			if Object.DogTimer >= temp0
+				PlayMusic(6)
+				Dog.State = 2
+			end if
+
+			object.PhoneTimer++
+			if object.PhoneTimer >= 50
+				rand(Object.PhoneShake, 8)
+				if object.PhoneTimer >= 100
+					object.PhoneTimer = 0
+				end if
+			end if
+
+			temp2 = 4
+			temp3 = 72
+			CheckTouchRect(temp2, 48, temp3, 150)
+			if CheckResult > -1
+				StopMusic()
+				PlayMusic(0)
+				
+				object.state++
+			end if
+
+		break
+		case 2
+			Object.DogTimer = 0
+		break		
+	end switch
+
+	if OfficePower <= 0
+		Object.Type = TypeName[Blank Object]
+	end if
+end if	
+end event
+
+event ObjectDraw
+	if dog.state == 1	
+		temp0 = 36
+		temp0 += Object.PhoneShake
+		DrawSpriteScreenFX(0, FX_ROTATE, temp0, 96)	//phone	
+	end if
+end event
+
+event ObjectStartup
+	LoadSpriteSheet("FNATF/Objects.gif")
+	Object[14].Type = TypeName[Dog]
+	Object[14].Priority = PRIORITY_ACTIVE
+	Object[14].DrawOrder = 4
+	SpriteFrame(-30, -47, 60, 93, 962, 70)
+end event
+
+
+// ========================
+// Editor events
+// ========================
+
+event RSDKDraw
+	DrawSprite(0)
+end event
+
+
+event RSDKLoad
+	LoadSpriteSheet("3D_Test/Objects.gif")
+	SpriteFrame(0, 0, 24, 16, 206, 58)
+
+	SetVariableAlias(ALIAS_VAR_PROPVAL, "unused")
+end event

@@ -1,0 +1,215 @@
+//// ========================
+// RSDK Project: FNATF
+// Script Name: Option Descriptions
+// Script Author: KarlEmerald
+// ========================
+
+// ========================
+// Aliases
+// ========================
+
+private alias object.value0 : object.currentWord
+private alias object.value1 : object.textFile
+private alias object.value2 : object.textY
+private alias object.value3 : object.currentRow
+private alias object.value4 : object.wordBorder
+private alias object.value5 : object.descY
+private alias object.value6 : object.displayDesc
+private alias object.value7 : object.descYTarget
+
+private alias object.value14 : object.movementInput
+private alias object.value15 : object.movementInputTarget
+
+// ========================
+// Events
+// ========================
+
+event ObjectDraw
+    if object.propertyValue == 0
+        temp0 = inputPress.left
+        temp0 |= inputPress.right
+        temp0 |= inputPress.up
+        temp0 |= inputPress.down
+        if temp0 == true
+            foreach(TypeName[Option Desc], arrayPos0, ALL_ENTITIES)
+                if object[arrayPos0].propertyValue > 0
+                    ResetObjectEntity(arrayPos0, TypeName[Blank Object], 0, 0, 0)
+                end if
+            next
+        end if
+
+        if object.displayDesc == false
+            object.descYTarget = 0
+            MenuControl_OptionDescY = 25
+            MenuControl_OptionDescX = 10
+        else
+            object.descYTarget = 40
+            MenuControl_OptionDescY = 0
+            MenuControl_OptionDescX = 0
+        end if
+        
+        if inputPress.buttonY == true
+            object.displayDesc ^= 1
+        end if
+
+        if inputPress.buttonB == true
+            if object.displayDesc == false
+                object.displayDesc = true
+            end if
+        end if
+
+        object.movementInput = object.descY
+        object.movementInputTarget = object.descYTarget
+        CallFunction(MenuControl_MovementFunc)
+        object.descY = object.movementInput
+
+        object.textFile = MenuControl_OptionsCur
+        object.textFile += 2
+
+        // option zero override
+
+        //dont make it harder then it has to be
+        if MenuControl_OptionsHighlight == 0
+            MenuControl_OptionDescLine = 2
+        end if
+        
+
+        object.wordBorder = screen.xsize
+        object.wordBorder -= 16
+
+        object.textY = screen.ysize
+        object.textY -= 30
+        object.textY += object.descY
+
+        temp0 = object.textY
+        temp0 -= 3
+	    DrawRect(0, temp0, screen.xsize, 90, color3, color1, color1, 255)
+
+        object.currentWord = 1
+
+        GetTextInfo(temp0, object.textFile, TEXTINFO_TEXTSIZE, MenuControl_OptionDescLine, 0)
+        temp1 = 0
+        temp3 = 5
+        while temp1 < temp0
+            GetTextInfo(temp2, object.textFile, TEXTINFO_TEXTDATA, MenuControl_OptionDescLine, temp1)
+            if temp2 == 64
+                temp3 = 5
+                object.currentRow++
+                object.currentWord++
+                object.textY += 8
+            else		
+                if temp2 == 32
+                    object.currentWord++
+                    temp3 += 8
+                else	
+                    if temp2 >= 192
+                        temp2 += 100       		
+                    end if            
+
+                    arrayPos0 = 300
+                    arrayPos0 += temp1
+                    ResetObjectEntity(arrayPos0, TypeName[Option Desc], object.currentWord, 0, 0)
+                    object[arrayPos0].ixpos = temp3
+                    object[arrayPos0].iypos = object.textY
+                    object[arrayPos0].drawOrder = 6
+                    object[arrayPos0].frame = temp2
+                    object[arrayPos0].priority = PRIORITY_ACTIVE
+
+                    temp3 += 8   
+                end if  
+            end if 
+
+            if temp3 >= object.wordBorder		
+                temp7 = 0		
+                object.currentRow++
+                object.textY += 8
+
+                temp6 = 5					
+                foreach(TypeName[Option Desc], arrayPos0, ALL_ENTITIES)
+                    if object[arrayPos0].propertyValue == object.currentWord	
+                        if object[arrayPos0].iypos < object.textY
+
+                            object[arrayPos0].ixpos = temp6	
+                            object[arrayPos0].iypos += 8	
+                                
+                            temp7 += 8
+                            temp6 += 8																																	
+                        end if
+                    end if
+                next
+
+                temp3 = 5
+                temp3 += temp7
+            end if 
+            temp1++
+        loop
+	else
+		DrawSpriteScreenXY(object.frame, object.ixpos, object.iypos)
+	end if			   
+end event
+
+event ObjectStartup
+    LoadSpriteSheet("FNATFMenu/Text.gif")
+
+	//Load font sprites
+	temp0 = 0
+	temp1 = 0
+	while temp0 < 88
+		while temp1 < 128
+			SpriteFrame(0, 0, 8, 8, temp1, temp0)
+			temp1 += 8
+		loop
+		temp1 = 0
+		temp0 += 8
+	loop
+
+    // 176 btw
+	SpriteFrame(0, -5, 17, 23, 1, 438)   //  À
+	SpriteFrame(0, -5, 17, 23, 19, 438)    //  Á
+	SpriteFrame(0, -5, 17, 23, 37, 438)   //  Â
+	SpriteFrame(0, -5, 17, 23, 55, 438)   //  Ã
+	SpriteFrame(0, -5, 17, 23, 73, 438)   //  Ä
+	SpriteFrame(0, -5, 17, 23, 91, 438)   //  Å
+	SpriteFrame(0, 0, 21, 18, 109, 443)   //  Æ
+	SpriteFrame(0, 0, 17, 23, 131, 443)   //  Ç
+	SpriteFrame(0, -5, 16, 23, 166, 438)  //  È
+	SpriteFrame(0, -5, 16, 23, 149, 438)  //  É
+	SpriteFrame(0, -5, 16, 23, 183, 438)  //  Ê
+	SpriteFrame(0, -5, 16, 23, 217, 438)  //  Ë
+	SpriteFrame(0, -5, 8, 23, 243, 438)   //  Ì
+	SpriteFrame(0, -5, 8, 23, 234, 438)   //  Í
+	SpriteFrame(0, -5, 8, 23, 252, 438)   //  Î
+	SpriteFrame(0, -5, 8, 23, 261, 438)   //  Ï
+	SpriteFrame(0, 0, 17, 18, 1, 474)     //  Ð
+	SpriteFrame(0, -5, 17, 23, 19, 469)   //  Ñ
+	SpriteFrame(0, -5, 18, 23, 37, 469)   //  Ò
+	SpriteFrame(0, -5, 18, 23, 56, 469)   //  Ó
+	SpriteFrame(0, -5, 18, 23, 75, 469)   //  Ô
+	SpriteFrame(0, -5, 18, 23, 94, 469)   //  Õ
+	SpriteFrame(0, -5, 18, 23, 113, 469)  //  Ö
+	SpriteFrame(0, -5, 18, 23, 132, 469)  //  ×
+	SpriteFrame(0, -5, 18, 23, 132, 469)  //  Ø
+	SpriteFrame(0, -5, 18, 23, 151, 469)  //  Ù
+	SpriteFrame(0, -5, 18, 23, 169, 469)  //  Ú
+	SpriteFrame(0, -5, 17, 23, 187, 469)  //  Û
+	SpriteFrame(0, -5, 17, 23, 205, 469)  //  Ü
+	SpriteFrame(0, -5, 17, 23, 223, 469)  //  Ý
+	SpriteFrame(0, -5, 17, 23, 241, 469)  //  Þ
+	SpriteFrame(0, -5, 17, 23, 255, 469)  //  ß
+
+end event
+
+
+// ========================
+// Editor Events
+// ========================
+
+event RSDKDraw
+    DrawSprite(0)
+end event
+
+
+event RSDKLoad
+    LoadSpriteSheet("Global/Display.gif")
+    SpriteFrame(-16, -16, 32, 32, 1, 143)		// #0 - "Script" Icon
+end event

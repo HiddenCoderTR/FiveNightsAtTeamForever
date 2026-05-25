@@ -1,0 +1,314 @@
+// ----------------------------------
+// RSDK Project: Five Nights At Team Forever
+// Script Description: Cam Drawer
+// Script Author: Casteor573
+// ----------------------------------
+
+
+// Priority
+private alias Object.Value0 : Object.Timer     //	you know this one 
+private alias Object.Value1 : Object.Alpha
+private alias Object.Value2 : Object.Highlight
+
+private alias object.value14 : object.movementInput
+private alias object.value15 : object.movementInputTarget
+
+private alias Object[4].Value3 : Object.LeftLight
+private alias Object[4].Value4 : Object.RightLight
+private alias Object[4].Value9 : Object.SoundTimer
+
+private alias object[12].state : Shrine.State
+
+public alias saveRAM[202] : saved.reduceMotion
+
+private alias 9 : CAM_KITCHEN_9
+
+private alias 1 : PRIORITY_ACTIVE
+
+reserve function PauseMenu_BarAnimation
+reserve function PauseMenu_MovementFunc
+
+function PauseMenu_BarAnimation
+	if saved.reduceMotion == 0
+		// Move left side
+		object.value5 -= 25
+		if object.value5 < 0
+			object.value5 = 0
+		end if
+
+		// Move right side
+		object.value6 += 25
+		object.scale += 50
+		if object.value6 > Screen.XSize
+			object.value6 = Screen.XSize
+		end if
+		if object.scale > 512
+			object.scale = 512
+		end if
+	else
+		object.value5 = 0
+		object.value6 = Screen.XSize
+		object.scale += 50
+		if object.scale > 512
+			object.scale = 512
+		end if
+	end if
+end function
+
+function PauseMenu_MovementFunc
+	//SLIDING STUFF
+	temp0 = object.movementInputTarget
+	temp0 -= object.movementInput
+	Abs(temp0)
+
+	temp1 = object.movementInputTarget
+	temp1 -= object.movementInput
+
+	//Make sure it's exactly in the spot
+	if temp0 < 6
+		if object.movementInput > object.movementInputTarget
+			object.movementInput--
+		else
+			if object.movementInput < object.movementInputTarget
+				object.movementInput++
+			else
+				object.movementInput = object.movementInputTarget
+			end if
+		end if
+	else
+		temp1 >>= 2
+		object.movementInput += temp1
+	end if	
+end function
+
+
+event ObjectMain
+	switch object.state
+		case 0
+			temp3 = 0
+			object.scale = 0
+			object.value3 = 50
+			object.value5 = Screen.XSize
+			object.value6 = 0
+			Object.Highlight = 0
+			StopSfx(SfxName[Hum])
+			StopSfx(SfxName[Fan])
+			StopSfx(SfxName[Shrine Kitchen])
+
+			temp0 = stage.listPos
+			temp0 += 82
+			PauseVoice(temp0)
+
+			PauseMusic()
+			
+			if Object.Alpha <= 128
+				Object.Alpha += 20
+			else
+				Object.Alpha = 128
+				object.value10 = 0
+				CallFunction(PauseMenu_BarAnimation)
+				object.state++
+			end if
+		break
+		case 1
+			CallFunction(PauseMenu_BarAnimation)
+
+
+			CheckTouchRect(0, 50, screen.xsize, 90)
+			if CheckResult > -1
+				Object.Highlight = 0
+				inputPress.buttonA = 1 
+			end if
+
+			CheckTouchRect(0, 100, screen.xsize, 140)
+			if CheckResult > -1
+				Object.Highlight = 1
+				inputPress.buttonA = 1 
+			end if
+
+			CheckTouchRect(0, 150, screen.xsize, 190)
+			if CheckResult > -1
+				Object.Highlight = 2
+				inputPress.buttonA = 1 
+			end if
+
+			if object.value6 == Screen.XSize
+
+			if inputPress.up == 1
+				object.state = 2
+				Object.Highlight--
+				object.value10 -= 50
+				PlaySfx(SfxName[Menu Move], false) 
+				while Object.Highlight < 0
+					object.value10 = 100
+					Object.Highlight += 3
+				loop
+			else
+				if inputPress.down == 1
+					object.state = 2
+					Object.Highlight++
+					object.value10 += 50
+					PlaySfx(SfxName[Menu Move], false)
+					Object.Highlight %= 3
+					if Object.Highlight == 0
+						object.value10 = 0
+					end if
+				else
+					temp0 = inputPress.buttonA
+					temp0 |= inputPress.start
+					if temp0 == 1
+
+						switch Object.Highlight
+						case 0
+							PlaySfx(SfxName[Menu Select], false)
+							object.state = 5                
+							break
+						case 1
+							PlaySfx(SfxName[Menu Select], false)
+							Object.Timer = 0
+							object.state = 3
+							break
+						case 2
+							object.state = 4 
+							break
+						end switch
+					end if
+
+					if inputPress.buttonB == 1
+						object.state = 5
+					end if
+				end if
+			end if
+
+			end if
+
+			object.value11 = object.value10
+			object.value11 += 50
+		break
+	case 2
+		object.movementInput = object.value3
+		object.movementInputTarget = object.value11	
+		CallFunction(PauseMenu_MovementFunc)
+		object.value3 = object.movementInput
+
+		if object.value3 == object.movementInputTarget 
+			object.state = 1
+		end if
+		break
+	case 3
+		if Object.Timer > 512
+			LoadStage()
+		else
+			object.Timer += 8	
+		end if	
+		SetClassicFadeOut(0, 0, 0, object.Timer)
+		break
+	case 4
+		if Object.Timer > 512
+			stage.listPos = StageName[R - FNATF MENU]
+			SkipTFScreen = true
+			stage.activeList = PRESENTATION_STAGE
+			LoadStage()
+		else
+			object.Timer += 16
+		end if	
+		SetClassicFadeOut(0, 0, 0, object.Timer)
+		break
+	case 5
+		if Object.Alpha > 0
+			Object.Alpha -= 20
+			Object.scale -= 50
+			if Object.scale < 0
+				Object.scale = 0
+			end if
+		else
+			Object.Alpha = 0
+			object.value10 = 0
+			object.type = TypeName[Blank Object]
+		end if
+		stage.state = STAGE_RUNNING
+		if OfficePower > 0
+			CheckEqual(Object.LeftLight, 1)
+			temp0 = checkresult
+			CheckEqual(Object.RightLight, 1)
+			temp0 |= checkresult		
+			if temp0 == true			
+				PlaySfx(SfxName[Hum], 0)	
+				Object.SoundTimer = 0
+			end if
+			PlaySfx(SfxName[Fan], 0)
+		end if
+
+		if Object[20].Type == TypeName[Phone Guy]
+			temp0 = stage.listPos
+			temp0 += 82
+			ResumeVoice(temp0)	
+		end if
+
+
+		ResumeMusic()
+
+		if shrine.state == CAM_KITCHEN_9
+			PlaySfx(SfxName[Shrine Kitchen], 1)
+		end if
+
+		break
+	end switch
+end event
+
+event ObjectDraw
+	temp0 = object.value6
+	temp0 -= object.value5
+	temp1 = Object.Alpha
+	temp1 += Object.Alpha 
+	DrawRect(object.value5, object.value3, temp0, 40, color7, color7, color1, temp1)
+	DrawRect(0, 0, Screen.XSize, Screen.YSize, color7, color3, 0, Object.Alpha)
+
+	temp2 = FX_VSCALE
+	if Object.Highlight == 0
+		DrawSpriteScreenFX(3, temp2, screen.xcenter, 56)
+	else
+		DrawSpriteScreenFX(0, temp2, screen.xcenter, 56)
+	end if
+	if Object.Highlight == 1
+		DrawSpriteScreenFX(4, temp2, screen.xcenter, 106)
+	else
+		DrawSpriteScreenFX(1, temp2, screen.xcenter, 106)
+	end if
+	if Object.Highlight == 2
+		DrawSpriteScreenFX(5, temp2, screen.xcenter, 156)
+	else
+		DrawSpriteScreenFX(2, temp2, screen.xcenter, 156)
+	end if
+	
+end event
+
+event ObjectStartup
+	LoadSpriteSheet("FNATF/Objects.gif")
+	// Continue, Restart, Exit - Unhighlighted
+	SpriteFrame(-103, 0, 206, 27, 290, 575)
+	SpriteFrame(-87, 0, 174, 27, 290, 603)
+	SpriteFrame(-45, 0, 89, 26, 290, 631)
+
+	// Continue, Restart, Exit - Highlighted
+	SpriteFrame(-103, 0, 206, 27, 497, 575)
+	SpriteFrame(-87, 0, 174, 27, 465, 603)
+	SpriteFrame(-45, 0, 89, 26, 380, 631)	
+end event
+
+
+// ========================
+// Editor events
+// ========================
+
+event RSDKDraw
+	DrawSprite(0)
+end event
+
+
+event RSDKLoad
+	LoadSpriteSheet("3D_Test/Objects.gif")
+	SpriteFrame(0, 0, 24, 16, 206, 58)
+
+	SetVariableAlias(ALIAS_VAR_PROPVAL, "unused")
+end event
